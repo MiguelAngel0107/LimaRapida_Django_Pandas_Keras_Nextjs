@@ -32,8 +32,8 @@ PRIMARY_APPS = [
 ]
 
 SECONDARY_APPS = [
+    'apps.maps',
     'apps.ciudades',
-    'apps.testMongo',
 ]
 
 TERTIARY_APPS = [
@@ -107,13 +107,14 @@ DATABASES = {
         'ENFORCE_SCHEMA': False,
         'CLIENT': {
             'host': 'mongodb+srv://MiguelAngel:saudofox2690@cluster0.ndn36bt.mongodb.net/',
-            #'authMechanism': 'SCRAM-SHA-1',
+            # 'authMechanism': 'SCRAM-SHA-1',
         }
     }
 }
 
 DATABASE_ROUTERS = ['core.routers.MongodbRouter']
 
+GOOGLE_MAPS_API_KEY = config('GOOGLE_MAPS_API_KEY')
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
