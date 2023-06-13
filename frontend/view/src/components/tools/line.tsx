@@ -1,22 +1,28 @@
-import React from 'react';
+import React from "react";
 
 interface LineaProps {
+  pointX: number;
+  pointY: number;
   rotacion: number;
   longitud: string;
 }
 
-function Linea({ rotacion, longitud }: LineaProps): JSX.Element {
+function Linea({
+  pointX,
+  pointY,
+  rotacion,
+  longitud,
+}: LineaProps): JSX.Element {
   const estiloLinea: React.CSSProperties = {
     width: longitud,
-    height: '2px',
-    backgroundColor: 'black',
+    height: "2px",
+    backgroundColor: "black",
     transform: `rotate(${rotacion}deg)`,
-    transformOrigin: '100 100',
+    transformOrigin: `${pointX}px ${pointY}px`,
+    position: "absolute",
   };
 
-  return (
-    <div style={estiloLinea}></div>
-  );
+  return <div style={estiloLinea}></div>;
 }
 
 export default Linea;
