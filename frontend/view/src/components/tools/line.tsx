@@ -4,7 +4,9 @@ interface LineaProps {
   pointX: number;
   pointY: number;
   rotacion: number;
-  longitud: string;
+  longitud: number;
+  grosor: number;
+  colorHexa: string;
 }
 
 function Linea({
@@ -12,14 +14,18 @@ function Linea({
   pointY,
   rotacion,
   longitud,
+  grosor = 1,
+  colorHexa = "#fff",
 }: LineaProps): JSX.Element {
   const estiloLinea: React.CSSProperties = {
-    width: longitud,
-    height: "2px",
-    backgroundColor: "black",
-    transform: `rotate(${rotacion}deg)`,
-    transformOrigin: `${pointX}px ${pointY}px`,
     position: "absolute",
+    left: `${pointX}px`,
+    top: `${pointY}px`,
+    width: `${longitud}px`,
+    transform: `rotate(${rotacion}deg)`,
+    transformOrigin: "0 0",
+    backgroundColor: `${colorHexa}`,
+    height: `${grosor}px`,
   };
 
   return <div style={estiloLinea}></div>;
