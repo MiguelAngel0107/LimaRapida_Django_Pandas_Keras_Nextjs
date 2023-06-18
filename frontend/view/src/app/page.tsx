@@ -81,7 +81,7 @@ export default function Home() {
           pointY={450}
           pointX2={1500}
           pointY2={450}
-          nFragements={10}
+          nFragements={4}
           rotacion={0}
         />
 
@@ -89,15 +89,8 @@ export default function Home() {
           pointX={500}
           pointY={450}
           rotacion={0}
-          longitud={1800}
-          colorHexa="blue"
-        />
-        <Linea
-          pointX={1400}
-          pointY={450}
-          rotacion={90}
           longitud={1000}
-          colorHexa="white"
+          colorHexa="blue"
         />
 
         <Linea pointX={500} pointY={450} longitud={1000} rotacion={90} colorHexa="green" />
