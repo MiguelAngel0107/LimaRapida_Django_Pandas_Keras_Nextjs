@@ -73,6 +73,7 @@ export default function Home() {
             20,
           ]}
           nFragements={20}
+          colorHexa="blue"
         />
 
         <RadiusLine
@@ -80,11 +81,37 @@ export default function Home() {
           pointY={450}
           pointX2={1500}
           pointY2={450}
-          nFragements={2}
+          nFragements={10}
           rotacion={0}
         />
 
-       
+        <Linea
+          pointX={500}
+          pointY={450}
+          rotacion={0}
+          longitud={1800}
+          colorHexa="blue"
+        />
+        <Linea
+          pointX={1400}
+          pointY={450}
+          rotacion={90}
+          longitud={1000}
+          colorHexa="white"
+        />
+
+        <Linea pointX={500} pointY={450} longitud={1000} rotacion={90} colorHexa="green" />
+        <Linea pointX={600} pointY={450} longitud={1000} rotacion={90} colorHexa="green" />
+        <Linea pointX={700} pointY={450} longitud={1000} rotacion={90} colorHexa="green" />
+        <Linea pointX={800} pointY={450} longitud={1000} rotacion={90} colorHexa="green" />
+        <Linea pointX={900} pointY={450} longitud={1000} rotacion={90} colorHexa="green" />
+        <Linea pointX={1000} pointY={450} longitud={1000} rotacion={90} colorHexa="green" />
+        <Linea pointX={1100} pointY={450} longitud={1000} rotacion={90} colorHexa="green" />
+        <Linea pointX={1200} pointY={450} longitud={1000} rotacion={90} colorHexa="green" />
+        <Linea pointX={1300} pointY={450} longitud={1000} rotacion={90} colorHexa="green" />
+        <Linea pointX={1400} pointY={450} longitud={1000} rotacion={90} colorHexa="green" />
+        <Linea pointX={1500} pointY={450} longitud={1000} rotacion={90} colorHexa="green" />
+        <Linea pointX={1600} pointY={450} longitud={1000} rotacion={90} colorHexa="green" />
 
       </div>
     </div>

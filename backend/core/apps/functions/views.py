@@ -20,4 +20,6 @@ class LongitudSecanteView(APIView):
         longitud_secante = (2 * radio) / math.cos(angulo_radianes)
         longitud_secante = round(longitud_secante, 2)
 
+        print(longitud_secante)
+
         return Response({'longitud_secante': longitud_secante}, status=status.HTTP_200_OK)

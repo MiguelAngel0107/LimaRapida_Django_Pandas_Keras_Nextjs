@@ -111,6 +111,11 @@ DATABASES = {
             # 'authMechanism': 'SCRAM-SHA-1',
         }
     }
+    #'default': dj_database_url.config(
+    #    default=config('DATABASE'),
+    #    conn_max_age=600,
+    #    conn_health_checks=True,
+    #)
 }
 
 DATABASE_ROUTERS = ['core.routers.MongodbRouter']

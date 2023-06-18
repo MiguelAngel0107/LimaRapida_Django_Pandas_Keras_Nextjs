@@ -45,7 +45,7 @@ function FragmentedLine({
             pointX2={coordenadas.x2}
             pointY2={coordenadas.y2}
             grosor={cargaTrafico[index]}
-            colorHexa="white"
+            colorHexa={colorHexa}
           />
         ))}
     </>

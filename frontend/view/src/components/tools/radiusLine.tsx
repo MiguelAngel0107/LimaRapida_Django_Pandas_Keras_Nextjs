@@ -7,6 +7,7 @@ import {
   calcularLongitudSecante_django,
 } from "../functions/calcCoorEnd";
 import Linea from "./line";
+import Marker from "./marker";
 
 interface RadiusLineProps {
   pointX: number;
@@ -37,67 +38,68 @@ function RadiusLine({
     );
   }, [pointX, pointY, pointX2, pointY2, nFragements]);
 
-  function calculateRotationStart(i: number): number {
+  function calculateRotation(i: number): number {
     return 90 - (90 / (nFragements / 2)) * (i + 1);
   }
-  function calculateRotationEnd(i: number): number {
-    return -(90 / (nFragements / 2)) * (i + 1);
-  }
 
-  function calculateLongitud(catetoA: number, catetoB: number): number {
-    const hipotenusa = Math.sqrt(Math.pow(catetoA, 2) + Math.pow(catetoB, 2));
-    return hipotenusa;
+  function secante(angulo: number, radio: number): number {
+    console.log("Angulo", angulo);
+    console.log("Radio", radio);
+
+    // Convertir el ángulo de grados a radianes
+    const angulo_radianes = angulo * (Math.PI / 180);
+
+    // Calcular la longitud de la secante
+    let longitud_secante = (2 * radio) / Math.cos(angulo_radianes);
+    longitud_secante = Math.round(longitud_secante * 100) / 100;
+
+    console.log(longitud_secante);
+    return longitud_secante;
   }
 
   function Render(): JSX.Element[] {
     const elements: JSX.Element[] = [];
     let PointStart: [number, number] = [pointX, pointY];
-    for (let i: number = 0; i < nFragements / 2; i++) {
+
+    for (let i: number = 0; i < nFragements - 1; i++) {
+      console.log("-----------------------------------------------");
+      console.log("Ciclo", i);
+      const longitudSecante = longitud// secante(calculateRotation(i), longitud);
+
       elements.push(
         <Linea
           key={i}
           pointX={PointStart[0]}
           pointY={PointStart[1]}
-          longitud={calcularLongitudSecante_django(
-            calculateRotationStart(i),
-            longitud
-          )}
-          rotacion={calculateRotationStart(i)}
-          grosor={1}
-          colorHexa="red"
+          longitud={longitudSecante}
+          rotacion={calculateRotation(i)}
+          grosor={2}
+          colorHexa={`red`}
         />
       );
-      console.log("Long 1");
-      console.log(calcularLongitudSecante_django(calculateRotationEnd(i), longitud));
 
-      PointStart = calcularCoordenadasFinales(
-        PointStart,
-        calcularLongitudSecante_django(calculateRotationStart(i), longitud),
-        calculateRotationStart(i)
-      );
-    }
-    for (let i: number = 0; i < nFragements / 2; i++) {
       elements.push(
-        <Linea
-          key={i}
+        <Marker
           pointX={PointStart[0]}
           pointY={PointStart[1]}
-          longitud={calcularLongitudSecante_django(
-            calculateRotationStart(i),
-            longitud
-          )}
-          rotacion={calculateRotationEnd(i)}
-          grosor={1}
-          colorHexa="green"
+          radio={5}
+          colorHexa="white"
         />
       );
-      console.log("Long 2");
-      console.log(calcularLongitudSecante_django(calculateRotationEnd(i), longitud));
 
       PointStart = calcularCoordenadasFinales(
         PointStart,
-        calcularLongitudSecante_django(calculateRotationStart(i), longitud),
-        calculateRotationEnd(i)
+        longitudSecante,
+        calculateRotation(i)
+      );
+
+      elements.push(
+        <Marker
+          pointX={PointStart[0]}
+          pointY={PointStart[1]}
+          radio={5}
+          colorHexa="transparent"
+        />
       );
     }
     return elements;

@@ -27,6 +27,7 @@ export function calcularLongitudSecante(angulo: number, radio: number): number {
   // Calcular la longitud de la secante
   const longitudSecante = 2 * radio * Math.sin(anguloRadianes / 2);
 
+  console.log(longitudSecante);
   return longitudSecante;
 }
 
@@ -50,6 +51,7 @@ export async function calcularLongitudSecante_django(
 
     if (res.status === 200) {
       const longitudSecante2 = res.data.longitud_secante;
+      console.log("Success");
       console.log(longitudSecante2);
     }
   } catch (err) {
