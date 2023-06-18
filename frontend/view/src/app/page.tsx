@@ -7,6 +7,7 @@ import Row from "@/components/tools/row";
 import LineTwoPoints from "@/components/tools/lineTwoPoints";
 import RowTwoPoints from "@/components/tools/rowTwoPoints";
 import FragmentedLine from "@/components/tools/fragmentedLine";
+import RadiusLine from "@/components/tools/radiusLine";
 
 export default function Home() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -61,66 +62,30 @@ export default function Home() {
         onMouseMove={handleMouseMove}
       >
         <PointCenter />
-        <Marker pointX={100} pointY={150} radio={10} colorHexa="blue" />
-        <Marker
-          pointX={screenSize.width / 2}
-          pointY={screenSize.height / 2}
-          radio={10}
-          colorHexa="green"
-        />
-
-        <Linea
-          pointX={100}
-          pointY={150}
-          rotacion={0}
-          longitud={2000}
-          colorHexa="#fff"
-        />
-
-        <Row
-          pointX={1000}
-          pointY={500}
-          rotacion={0}
-          longitud={200}
-          colorHexa="yellow"
-          start
-          end
-        />
-
-        <LineTwoPoints
-          pointX={1000}
-          pointY={400}
-          pointX2={1200}
-          pointY2={400}
-          colorHexa="white"
-        />
-
-        <RowTwoPoints
-          pointX={1000}
-          pointY={600}
-          pointX2={1200}
-          pointY2={400}
-          colorHexa="yellow"
-          start
-          end
-        />
 
         <FragmentedLine
-          pointX={50}
-          pointY={50}
-          pointX2={150}
-          pointY2={120}
-          cargaTrafico={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]}
-          nFragements={10}
+          pointX={550}
+          pointY={250}
+          pointX2={1500}
+          pointY2={250}
+          cargaTrafico={[
+            1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
+            20,
+          ]}
+          nFragements={20}
         />
 
-        <LineTwoPoints
-          pointX={50}
-          pointY={50}
-          pointX2={100}
-          pointY2={100}
-          colorHexa="transparent"
+        <RadiusLine
+          pointX={500}
+          pointY={450}
+          pointX2={1500}
+          pointY2={450}
+          nFragements={2}
+          rotacion={0}
         />
+
+       
+
       </div>
     </div>
   );

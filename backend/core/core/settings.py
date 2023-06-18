@@ -32,6 +32,7 @@ PRIMARY_APPS = [
 ]
 
 SECONDARY_APPS = [
+    'apps.functions',
     'apps.maps',
     'apps.ciudades',
 ]

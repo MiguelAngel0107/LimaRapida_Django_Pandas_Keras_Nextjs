@@ -47,3 +47,21 @@ export function dividirSegmentoEnPartes(
 
   return coorFragementos;
 }
+
+export function obtenerTamanoSegmentos(
+  puntoInicial: [number, number],
+  puntoFinal: [number, number],
+  cantidadPartes: number
+): number {
+  // Obtener las coordenadas x de los puntos extremos
+  const xInicial: number = puntoInicial[0];
+  const xFinal: number = puntoFinal[0];
+
+  // Calcular la longitud total de la recta
+  const longitudTotal: number = xFinal - xInicial;
+
+  // Calcular el tamaño de cada segmento
+  const tamanoSegmento: number = longitudTotal / cantidadPartes;
+
+  return tamanoSegmento;
+}
