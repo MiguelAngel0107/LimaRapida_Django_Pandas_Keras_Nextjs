@@ -14,8 +14,6 @@ interface RadiusLineProps {
   pointY: number;
   pointX2: number;
   pointY2: number;
-  nFragements: number;
-  rotacion: number;
   maxPointAlt: number;
   colorHexa: string;
 }
@@ -30,12 +28,11 @@ function RadiusLine({
   pointY,
   pointX2,
   pointY2,
-  nFragements,
-  rotacion,
-  maxPointAlt,
+  maxPointAlt = 45,
   colorHexa = "white",
 }: RadiusLineProps): JSX.Element {
   const [longitud, setLongitud] = useState(0);
+  const nFragements: number = 20;
 
   useEffect(() => {
     function calcularLongitudSegmento(
@@ -58,7 +55,7 @@ function RadiusLine({
   }, [pointX, pointY, pointX2, pointY2, nFragements]);
 
   function calculateRotation(i: number): number {
-    return 90 - (90 / nFragements) * (i + 1);
+    return maxPointAlt - (maxPointAlt / nFragements) * (i + 1);
   }
 
   function secante(angulo: number, radio: number): number {
@@ -82,7 +79,7 @@ function RadiusLine({
           longitud={longitudSecante}
           rotacion={calculateRotation(i)}
           grosor={2}
-          colorHexa={`red`}
+          colorHexa={colorHexa}
         />
       );
 

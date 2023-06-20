@@ -81,18 +81,7 @@ export default function Home() {
           pointY={450}
           pointX2={1500}
           pointY2={450}
-          nFragements={1}
-          rotacion={0}
         />
-
-        <Linea
-          pointX={500}
-          pointY={450}
-          rotacion={0}
-          longitud={1000}
-          colorHexa="blue"
-        />
-
       </div>
     </div>
   );
