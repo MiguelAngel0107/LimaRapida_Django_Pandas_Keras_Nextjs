@@ -20,6 +20,11 @@ interface RadiusLineProps {
   colorHexa: string;
 }
 
+interface Punto {
+  x: number;
+  y: number;
+}
+
 function RadiusLine({
   pointX,
   pointY,
@@ -33,54 +38,47 @@ function RadiusLine({
   const [longitud, setLongitud] = useState(0);
 
   useEffect(() => {
-    setLongitud(
-      obtenerTamanoSegmentos([pointX, pointY], [pointX2, pointY2], nFragements)
-    );
+    function calcularLongitudSegmento(
+      puntoInicio: Punto,
+      puntoFin: Punto
+    ): number {
+      const distanciaX = puntoFin.x - puntoInicio.x;
+      const distanciaY = puntoFin.y - puntoInicio.y;
+
+      const longitud = Math.sqrt(
+        distanciaX * distanciaX + distanciaY * distanciaY
+      );
+
+      return longitud / (nFragements * 2 - 1);
+    }
+    // Ejemplo de uso:
+    const punto1: Punto = { x: pointX, y: pointY };
+    const punto2: Punto = { x: pointX2, y: pointY2 };
+    setLongitud(calcularLongitudSegmento(punto1, punto2));
   }, [pointX, pointY, pointX2, pointY2, nFragements]);
 
   function calculateRotation(i: number): number {
-    return 90 - (90 / (nFragements / 2)) * (i + 1);
+    return 90 - (90 / nFragements) * (i + 1);
   }
 
   function secante(angulo: number, radio: number): number {
-    console.log("Angulo", angulo);
-    console.log("Radio", radio);
     const angulo_radianes = angulo * (Math.PI / 180);
     let longitud_secante = radio / Math.cos(angulo_radianes);
-
-    console.log(longitud_secante);
     return longitud_secante;
-  }
-
-  function secante2(angulo: number, radio: number): number {
-    const coseno: number = Math.cos(angulo);
-
-    if (coseno === 0) {
-      throw new Error("El ángulo no tiene secante.");
-    }
-
-    const secante: number = 1 / coseno;
-    const resultado: number = secante * radio;
-
-    console.log(resultado);
-
-    return resultado;
   }
 
   function Render(): JSX.Element[] {
     const elements: JSX.Element[] = [];
-    let PointStart: [number, number] = [pointX, pointY];
+    let PointEnd: [number, number] = [pointX, pointY];
 
-    for (let i: number = 0; i < nFragements; i++) {
-      console.log("-----------------------------------------------");
-      console.log("Ciclo", i);
+    for (let i: number = 0; i < nFragements * 2 - 1; i++) {
       const longitudSecante = secante(calculateRotation(i), longitud);
 
       elements.push(
         <Linea
           key={i}
-          pointX={PointStart[0]}
-          pointY={PointStart[1]}
+          pointX={PointEnd[0]}
+          pointY={PointEnd[1]}
           longitud={longitudSecante}
           rotacion={calculateRotation(i)}
           grosor={2}
@@ -88,30 +86,13 @@ function RadiusLine({
         />
       );
 
-      elements.push(
-        <Marker
-          pointX={PointStart[0]}
-          pointY={PointStart[1]}
-          radio={5}
-          colorHexa="white"
-        />
-      );
-
-      PointStart = calcularCoordenadasFinales(
-        PointStart,
+      PointEnd = calcularCoordenadasFinales(
+        PointEnd,
         longitudSecante,
         calculateRotation(i)
       );
-
-      elements.push(
-        <Marker
-          pointX={PointStart[0]}
-          pointY={PointStart[1]}
-          radio={5}
-          colorHexa="white"
-        />
-      );
     }
+
     return elements;
   }
 
