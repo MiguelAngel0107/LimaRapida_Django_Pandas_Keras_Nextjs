@@ -3,8 +3,6 @@ from rest_framework.response import Response
 from rest_framework import status, permissions
 import math
 
-# Create your views here.
-
 
 class LongitudSecanteView(APIView):
     permission_classes = (permissions.AllowAny,)

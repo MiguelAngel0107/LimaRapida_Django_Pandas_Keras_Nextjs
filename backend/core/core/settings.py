@@ -4,14 +4,8 @@ from decouple import config
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = config('SECRET_KEY')
 
-# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=False, cast=bool)
 
 ALLOWED_HOSTS = ['*']
@@ -25,16 +19,19 @@ APPS_DEFAULT = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    'django.contrib.gis'
 ]
 
 PRIMARY_APPS = [
-
+    'apps.geografia',
+    'apps.carreteras',
+    'apps.analisis',
+    'apps.sugerencias',
 ]
 
 SECONDARY_APPS = [
     'apps.functions',
-    'apps.maps',
-    'apps.ciudades',
 ]
 
 TERTIARY_APPS = [
@@ -89,14 +86,10 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "core.wsgi.application"
 
-
-# Database
-# https://docs.djangoproject.com/en/4.2/ref/settings/#databases
-
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'LimaRapida',
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
+        'NAME': 'postgis_33_sample',#'LimaRapida',
         'USER': 'postgres',
         'PASSWORD': 'saudofox2690',
         'HOST': 'localhost',
@@ -111,16 +104,18 @@ DATABASES = {
             # 'authMechanism': 'SCRAM-SHA-1',
         }
     }
-    #'default': dj_database_url.config(
+    # 'default': dj_database_url.config(
     #    default=config('DATABASE'),
     #    conn_max_age=600,
     #    conn_health_checks=True,
-    #)
+    # )
 }
 
 DATABASE_ROUTERS = ['core.routers.MongodbRouter']
 
 GOOGLE_MAPS_API_KEY = config('GOOGLE_MAPS_API_KEY')
+
+#GEOS_LIBRARY_PATH = '../env/Lib/site-packages/libgeos_c.so'
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators

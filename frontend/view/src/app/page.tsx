@@ -8,6 +8,7 @@ import LineTwoPoints from "@/components/tools/lineTwoPoints";
 import RowTwoPoints from "@/components/tools/rowTwoPoints";
 import FragmentedLine from "@/components/tools/fragmentedLine";
 import RadiusLine from "@/components/tools/radiusLine";
+import RadiusLineDinamic from "@/components/tools/radiusLineDinamic";
 
 export default function Home() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -52,6 +53,20 @@ export default function Home() {
     setLastPositionY(event.clientY);
   }
 
+  function generarListaValores(inicio: number, fin: number): number[] {
+    const lista: number[] = [];
+
+    for (let i = inicio; i <= fin; i++) {
+      lista.push(i);
+    }
+
+    for (let i = fin - 1; i >= inicio; i--) {
+      lista.push(i);
+    }
+
+    return lista;
+  }
+
   return (
     <div>
       <div
@@ -76,12 +91,9 @@ export default function Home() {
           colorHexa="blue"
         />
 
-        <RadiusLine
-          pointX={500}
-          pointY={450}
-          pointX2={1500}
-          pointY2={450}
-        />
+        <RadiusLine pointX={500} pointY={450} pointX2={1500} pointY2={450} />
+
+        
       </div>
     </div>
   );
