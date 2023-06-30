@@ -2,4 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
-
+/* Para ocultar solo la barra de desplazamiento vertical */
+::-webkit-scrollbar {
+    display: none;
+  }
+  
+  /* Para ocultar tanto la barra de desplazamiento horizontal como vertical */
+  ::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+  }

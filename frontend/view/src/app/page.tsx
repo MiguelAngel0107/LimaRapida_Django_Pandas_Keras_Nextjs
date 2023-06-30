@@ -1,100 +1,95 @@
-"use client";
-import { useState, useRef, useEffect } from "react";
-import Linea from "@/components/tools/line";
-import Marker from "@/components/tools/marker";
-import PointCenter from "@/components/tools/pointCenter";
-import Row from "@/components/tools/row";
-import LineTwoPoints from "@/components/tools/lineTwoPoints";
-import RowTwoPoints from "@/components/tools/rowTwoPoints";
-import FragmentedLine from "@/components/tools/fragmentedLine";
-import RadiusLine from "@/components/tools/radiusLine";
-import RadiusLineDinamic from "@/components/tools/radiusLineDinamic";
+import React from "react";
+import Image from "next/image";
+import NavBar from "@/components/navigation/navBar";
 
-export default function Home() {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const [lastPositionX, setLastPositionX] = useState(0);
-  const [lastPositionY, setLastPositionY] = useState(0);
-  const [screenSize, setScreenSize] = useState({ width: 0, height: 0 });
-
-  useEffect(() => {
-    setScreenSize({
-      width: window.innerWidth,
-      height: window.innerHeight,
-    });
-  }, []);
-
-  function handleMouseDown(event: React.MouseEvent<HTMLDivElement>) {
-    setIsDragging(true);
-    setLastPositionX(event.clientX);
-    setLastPositionY(event.clientY);
-  }
-
-  function handleMouseUp(event: React.MouseEvent<HTMLDivElement>) {
-    if (isDragging) {
-      setIsDragging(false);
-      setLastPositionX(0);
-      setLastPositionY(0);
-    }
-  }
-
-  function handleMouseMove(event: React.MouseEvent<HTMLDivElement>) {
-    if (!isDragging) return;
-
-    const deltaX = event.clientX - lastPositionX;
-    const deltaY = event.clientY - lastPositionY;
-
-    if (containerRef.current) {
-      containerRef.current.scrollLeft -= deltaX;
-      containerRef.current.scrollTop -= deltaY;
-    }
-
-    setLastPositionX(event.clientX);
-    setLastPositionY(event.clientY);
-  }
-
-  function generarListaValores(inicio: number, fin: number): number[] {
-    const lista: number[] = [];
-
-    for (let i = inicio; i <= fin; i++) {
-      lista.push(i);
-    }
-
-    for (let i = fin - 1; i >= inicio; i--) {
-      lista.push(i);
-    }
-
-    return lista;
-  }
-
+const HomePage = () => {
   return (
-    <div>
-      <div
-        className="relative w-screen h-screen border border-yellow-500 overflow-hidden cursor-grab active:cursor-grabbing bg-zinc-950"
-        ref={containerRef}
-        onMouseDown={handleMouseDown}
-        onMouseUp={handleMouseUp}
-        onMouseMove={handleMouseMove}
-      >
-        <PointCenter />
+    <div className="bg-gray-950">
+      <NavBar />
 
-        <FragmentedLine
-          pointX={550}
-          pointY={250}
-          pointX2={1500}
-          pointY2={250}
-          cargaTrafico={[
-            1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
-            20,
-          ]}
-          nFragements={20}
-          colorHexa="blue"
-        />
+      <main className="py-16">
+        <div className="container mx-auto px-4">
+          <div className="flex flex-col md:flex-row items-center">
+            <div className="md:w-1/2 mb-10">
+              <h1 className="text-4xl md:text-6xl font-bold mb-6 text-gray-100">
+                Recolección de Datos para Fines Educativos
+              </h1>
+              <p className="text-lg text-gray-400 mb-8">
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam
+                convallis sodales lectus. Donec a nunc ac lacus lobortis
+                gravida. Vestibulum ante ipsum primis in faucibus orci luctus et
+                ultrices posuere cubilia curae; Duis vel venenatis mi.
+              </p>
+              <a
+                href="#"
+                className="bg-purple-700 hover:bg-purple-800 text-white py-2 px-6 rounded-full font-bold text-lg"
+              >
+                Empezar
+              </a>
+            </div>
+            <div className="md:w-1/2">
+              <Image
+                src="/images/home/backiee-196480.jpg"
+                alt="Ilustración"
+                className="mx-auto rounded-3xl"
+                width={1000}
+                height={1000}
+              />
+            </div>
+          </div>
+        </div>
+      </main>
 
-        <RadiusLine pointX={500} pointY={450} pointX2={1500} pointY2={450} />
+      <section className="text-gray-100 py-12">
+        <div className="container mx-auto px-4">
+          <h2 className="text-3xl font-bold text-center mb-8">
+            Nuestros Servicios
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="p-4 bg-gradient-to-r from-purple-950 to-indigo-950 rounded-lg">
+              <h3 className="text-2xl font-bold text-gray-100 mb-4">
+                Análisis de Datos
+              </h3>
+              <p className="text-gray-400">
+                Realizamos análisis detallados de datos educativos para obtener
+                información valiosa sobre el rendimiento estudiantil, la
+                eficacia de los programas educativos y más.
+              </p>
+            </div>
+            <div className="p-4 bg-gradient-to-r from-indigo-950 to-purple-950 rounded-lg">
+              <h3 className="text-2xl font-bold text-gray-100 mb-4">
+                Desarrollo de Aplicaciones
+              </h3>
+              <p className="text-gray-400">
+                Creamos aplicaciones educativas interactivas y personalizadas
+                para facilitar la recolección de datos y mejorar la experiencia
+                de aprendizaje de estudiantes y educadores.
+              </p>
+            </div>
+            <div className="p-4 bg-gradient-to-r from-purple-950 to-indigo-950 rounded-lg">
+              <h3 className="text-2xl font-bold text-gray-100 mb-4">
+                Consultoría Educativa
+              </h3>
+              <p className="text-gray-400">
+                Ofrecemos servicios de consultoría educativa para ayudar a las
+                instituciones y organizaciones a implementar estrategias de
+                recolección de datos efectivas y utilizar los resultados para la
+                toma de decisiones informadas.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
 
-        
-      </div>
+      <footer className="bg-gray-900 text-gray-300 py-6">
+        <div className="container mx-auto px-4">
+          <p className="text-center">
+            © 2023 Tu Sitio | Todos los derechos reservados
+          </p>
+        </div>
+      </footer>
     </div>
   );
-}
+};
+
+export default HomePage;
