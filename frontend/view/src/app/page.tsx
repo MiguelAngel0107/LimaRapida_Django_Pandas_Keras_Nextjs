@@ -5,8 +5,6 @@ import NavBar from "@/components/navigation/navBar";
 const HomePage = () => {
   return (
     <div className="bg-gray-950">
-      <NavBar />
-
       <main className="py-16">
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row items-center">
@@ -81,13 +79,7 @@ const HomePage = () => {
         </div>
       </section>
 
-      <footer className="bg-gray-900 text-gray-300 py-6">
-        <div className="container mx-auto px-4">
-          <p className="text-center">
-            © 2023 Tu Sitio | Todos los derechos reservados
-          </p>
-        </div>
-      </footer>
+     
     </div>
   );
 };

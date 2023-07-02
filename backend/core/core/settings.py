@@ -13,6 +13,7 @@ ALLOWED_HOSTS = ['*']
 
 # Application definition
 APPS_DEFAULT = [
+    "daphne",
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -20,14 +21,15 @@ APPS_DEFAULT = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    'django.contrib.gis'
+    #'django.contrib.gis'
 ]
 
 PRIMARY_APPS = [
-    'apps.geografia',
-    'apps.carreteras',
-    'apps.analisis',
-    'apps.sugerencias',
+    'apps.chat'
+    #'apps.geografia',
+    #'apps.carreteras',
+    #'apps.analisis',
+    #'apps.sugerencias',
 ]
 
 SECONDARY_APPS = [
@@ -84,12 +86,19 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "core.wsgi.application"
+#WSGI_APPLICATION = "core.wsgi.application"
+ASGI_APPLICATION = "core.asgi.application"
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer"
+    }
+}
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': 'postgis_33_sample',#'LimaRapida',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'LimaRapida',#'LimaRapida',
         'USER': 'postgres',
         'PASSWORD': 'saudofox2690',
         'HOST': 'localhost',
