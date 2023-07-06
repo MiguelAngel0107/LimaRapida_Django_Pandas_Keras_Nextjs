@@ -2,9 +2,14 @@ import React, { useState, useEffect } from "react";
 import ChatInput from "./chatInput";
 import { APP_URL_WS_BACK } from "@/globals";
 
+interface listMessageProps {
+  username: string;
+  message: string;
+}
+
 function ChatMessages() {
   const [chatSocket, setChatSocket] = useState<WebSocket | null>(null);
-  const [listMessage, setListMessage] = useState([]);
+  const [listMessage, setListMessage] = useState<listMessageProps[]>([]);
 
   const [text, setText] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
