@@ -25,7 +25,8 @@ APPS_DEFAULT = [
 ]
 
 PRIMARY_APPS = [
-    'apps.chat'
+    'apps.chat',
+    'apps.meet'
     #'apps.geografia',
     #'apps.carreteras',
     #'apps.analisis',
@@ -119,6 +120,8 @@ DATABASES = {
     #    conn_health_checks=True,
     # )
 }
+
+CORS_ALLOW_ALL_ORIGINS = True
 
 DATABASE_ROUTERS = ['core.routers.MongodbRouter']
 

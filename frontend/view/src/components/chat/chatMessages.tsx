@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import ChatInput from "./chatInput";
+import { APP_URL_WS_BACK } from "@/globals";
 
 function ChatMessages() {
   const [chatSocket, setChatSocket] = useState<WebSocket | null>(null);
@@ -9,7 +10,7 @@ function ChatMessages() {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
   useEffect(() => {
-    const socket = new WebSocket("ws://localhost:8000/ws/holamundo/");
+    const socket = new WebSocket(`${APP_URL_WS_BACK}/ws/holamundo/`);
 
     socket.addEventListener("open", () => {
       console.log("WebSocket connection established.");
@@ -119,12 +120,12 @@ function ChatMessages() {
             <li
               key={index}
               className={`flex flex-col ${
-                message.username === idUser ? "items-end" : "items-start"
+                message.username === "Miguel" ? "items-end" : "items-start"
               }`}
             >
               <div
                 className={`inline-block px-4 py-2 rounded-lg ${
-                  message.username === idUser
+                  message.username === "Miguel"
                     ? "bg-indigo-600 text-white rounded-br-none"
                     : "bg-gray-100 text-gray-900 rounded-bl-none"
                 }`}
