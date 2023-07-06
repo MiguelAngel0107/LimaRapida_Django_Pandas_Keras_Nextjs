@@ -1,4 +1,5 @@
 import React from "react";
+import Image from "next/image";
 
 function ListContacts() {
   const contacts = [
@@ -34,10 +35,12 @@ function ListContacts() {
                 : "hover:bg-indigo-600 hover:text-white"
             }`}
           >
-            <img
+            <Image
               className="w-10 h-10 rounded-full"
               src={contact.avatar}
               alt={contact.name}
+              width={20}
+              height={20}
             />
             <div className="flex-1">
               <h2 className="text-lg font-medium">{contact.name}</h2>

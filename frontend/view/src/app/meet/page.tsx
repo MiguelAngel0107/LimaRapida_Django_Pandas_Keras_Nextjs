@@ -48,7 +48,7 @@ const Page: React.FC = () => {
         });
 
         // Manejar eventos de señalización de Peer
-        peer.current.on("signal", (data) => {
+        peer.current.on("signal", (data:any) => {
           // Enviar la señal al servidor de señalización a través del WebSocket
           socket.current?.send(JSON.stringify(data));
         });
@@ -59,7 +59,7 @@ const Page: React.FC = () => {
           // ...
         });
 
-        peer.current.on("stream", (stream) => {
+        peer.current.on("stream", (stream:any) => {
           // Obtener el stream de video remoto y establecerlo en el elemento de video HTML
           if (remoteVideoRef.current) {
             remoteVideoRef.current.srcObject = stream;
