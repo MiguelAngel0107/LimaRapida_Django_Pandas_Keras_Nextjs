@@ -40,6 +40,7 @@ function FragmentedLine({
       {arrayFragments &&
         arrayFragments.map((coordenadas, index) => (
           <LineTwoPoints
+            key={index}
             pointX={coordenadas.x1}
             pointY={coordenadas.y1}
             pointX2={coordenadas.x2}
