@@ -1,6 +1,6 @@
 from pathlib import Path
 from decouple import config
-import dj_database_url
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -10,6 +10,10 @@ SECRET_KEY = config('SECRET_KEY')
 DEBUG = config('DEBUG', default=False, cast=bool)
 
 ALLOWED_HOSTS = ['*']
+
+RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
+if RENDER_EXTERNAL_HOSTNAME:
+    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 
 
 # Application definition
@@ -98,14 +102,14 @@ CHANNEL_LAYERS = {
 }
 
 DATABASES = {
-    # 'default': {
-    #     'ENGINE': 'django.db.backends.postgresql',
-    #     'NAME': 'LimaRapida',#'LimaRapida',
-    #     'USER': 'postgres',
-    #     'PASSWORD': 'saudofox2690',
-    #     'HOST': 'localhost',
-    #     'PORT': 5432,
-    # },
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'LimaRapida',#'LimaRapida',
+        'USER': 'postgres',
+        'PASSWORD': 'saudofox2690',
+        'HOST': 'localhost',
+        'PORT': 5432,
+    },
     'mongodb': {
         'ENGINE': 'djongo',
         'NAME': 'LimaRapida',
@@ -114,12 +118,12 @@ DATABASES = {
             'host': 'mongodb+srv://MiguelAngel:saudofox2690@cluster0.ndn36bt.mongodb.net/',
             # 'authMechanism': 'SCRAM-SHA-1',
         }
-    },
-    'default': dj_database_url.config(
-       default=config('DATABASE'),
-       conn_max_age=600,
-       conn_health_checks=True,
-    )
+    }
+    # 'default': dj_database_url.config(
+    #    default=config('DATABASE'),
+    #    conn_max_age=600,
+    #    conn_health_checks=True,
+    # )
 }
 
 CORS_ALLOW_ALL_ORIGINS = True
@@ -162,6 +166,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = "static/"
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles/')
 
 # AUTH_USER_MODEL = "user.UserAccount"
 # EMAIL_BACKEND='django.core.mail.backends.console.EmailBackend'
