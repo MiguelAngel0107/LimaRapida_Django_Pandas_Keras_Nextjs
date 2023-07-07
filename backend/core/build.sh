@@ -1,3 +1,5 @@
+python -m venv venv         # Crea el entorno virtual
+source venv/bin/activate
 #!/usr/bin/env bash
 # exit on error
 set -o errexit
