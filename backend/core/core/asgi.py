@@ -18,6 +18,9 @@ from apps.meet.routing import websocket_urlpatterns as ws_url_meet
 
 from channels.security.websocket import AllowedHostsOriginValidator
 
+import django
+django.setup()
+
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "core.settings")
 
 application = ProtocolTypeRouter({
