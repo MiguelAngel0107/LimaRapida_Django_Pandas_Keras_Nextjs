@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import ChatInput from "./chatInput";
 import { APP_URL_WS_BACK } from "@/globals";
 
@@ -13,6 +13,8 @@ function ChatMessages() {
 
   const [text, setText] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+
+  const messagesContainerRef = useRef<HTMLUListElement>(null);
 
   useEffect(() => {
     const socket = new WebSocket(`${APP_URL_WS_BACK}/ws/holamundo/`);
@@ -37,8 +39,24 @@ function ChatMessages() {
     };
   }, []);
 
+  useEffect(() => {
+    // Scroll to bottom when new messages are added
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTop =
+        messagesContainerRef.current.scrollHeight;
+    }
+  }, [listMessage]);
+
+  useEffect(() => {
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.style.height = `${
+        window.innerHeight - 120
+      }px`;
+    }
+  }, []);
+
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    console.log("Paso el InputChange");
+    //console.log("Paso el InputChange");
     setText(event.target.value);
   };
 
@@ -78,10 +96,14 @@ function ChatMessages() {
   //  : (MessagesBackennd = messages);
 
   return (
-    <div className="flex-1 p-4 bg-gray-900 text-white">
+    <div className="flex-col w-full p-4 bg-gray-900 text-white pb-20">
       <h2 className="text-lg font-medium mb-4">Mensajes</h2>
-      <ul className="space-y-4">
-        {/*MessagesBackennd.map((message, index) => (
+      <ul
+        ref={messagesContainerRef}
+        className={`h-[86vh] w-full relative overflow-y-auto`}
+      >
+        <>
+          {/*MessagesBackennd.map((message, index) => (
           <li
             key={index}
             className={`flex flex-col ${
@@ -119,6 +141,7 @@ function ChatMessages() {
             <span className="text-xs text-gray-400 mt-1">Undefined</span>
           </li>
             ))*/}
+        </>
 
         {listMessage &&
           listMessage.map((message, index) => (
@@ -141,12 +164,14 @@ function ChatMessages() {
             </li>
           ))}
       </ul>
-      <ChatInput
-        text={text}
-        handleInputChange={handleInputChange}
-        toggleEmojiPicker={toggleEmojiPicker}
-        handleFormSubmit={handleFormSubmit}
-      />
+      <div>
+        <ChatInput
+          text={text}
+          handleInputChange={handleInputChange}
+          toggleEmojiPicker={toggleEmojiPicker}
+          handleFormSubmit={handleFormSubmit}
+        />
+      </div>
     </div>
   );
 }

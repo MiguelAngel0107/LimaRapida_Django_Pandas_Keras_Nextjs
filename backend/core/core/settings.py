@@ -109,8 +109,6 @@ DATABASES = {
     #    'USER': 'postgres',
     #    'PASSWORD': 'saudofox2690',
     #    'HOST': 'localhost',
-    #    'PORT': 5432,
-    #},
     'mongodb': {
         'ENGINE': 'djongo',
         'NAME': 'LimaRapida',
