@@ -12,10 +12,16 @@ interface Message {
 
 const Chat: React.FC = () => {
   return (
-    <div className="flex h-screen bg-gray-100">
-      <ListContacts />
-      <ChatMessages />
-      <SideSettings />
+    <div className="flex h-screen bg-gray-500">
+      <div className="hidden h-96 sm:block">
+        <ListContacts />
+      </div>
+      <div className="w-full sm:flex-1">
+        <ChatMessages />
+      </div>
+      <div className="hidden sm:block">
+        <SideSettings />
+      </div>
     </div>
   );
 };

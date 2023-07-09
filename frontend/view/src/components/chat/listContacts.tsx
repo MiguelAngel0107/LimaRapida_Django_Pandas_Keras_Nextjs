@@ -23,7 +23,7 @@ function ListContacts() {
     },
   ];
   return (
-    <div className="flex-3 p-4 bg-gray-950 text-white">
+    <div className="flex-1 p-4 bg-gray-950 text-white">
       <h2 className="text-lg font-medium mb-4">Contactos</h2>
       <ul className="space-y-4">
         {contacts.map((contact) => (
