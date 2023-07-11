@@ -11,15 +11,15 @@ interface Props {
 
 function ChatInput(props: Props): ReactElement {
   return (
-    <div className="bg-gray-900 p-4 flex items-center bottom-0">
+    <div className="bg-gray-900 flex items-center bottom-0">
       <form className="flex w-full" onSubmit={props.handleFormSubmit}>
-        <button
+        {/*<button
           type="button"
           className="mr-2 focus:outline-none"
           onClick={props.toggleEmojiPicker}
         >
           <FontAwesomeIcon icon={faSmile} />
-        </button>
+  </button>*/}
         {/* props.showEmojiPicker && (
           <Picker
             title="Elige un emoji"

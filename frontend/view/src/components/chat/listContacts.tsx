@@ -1,4 +1,5 @@
 import React from "react";
+import Image from "next/image";
 
 function ListContacts() {
   const contacts = [
@@ -22,7 +23,7 @@ function ListContacts() {
     },
   ];
   return (
-    <div className="flex-3 p-4 bg-gray-950 text-white">
+    <div className="flex-1 p-4 bg-gray-950 text-white">
       <h2 className="text-lg font-medium mb-4">Contactos</h2>
       <ul className="space-y-4">
         {contacts.map((contact) => (
@@ -34,10 +35,12 @@ function ListContacts() {
                 : "hover:bg-indigo-600 hover:text-white"
             }`}
           >
-            <img
+            <Image
               className="w-10 h-10 rounded-full"
               src={contact.avatar}
               alt={contact.name}
+              width={20}
+              height={20}
             />
             <div className="flex-1">
               <h2 className="text-lg font-medium">{contact.name}</h2>
