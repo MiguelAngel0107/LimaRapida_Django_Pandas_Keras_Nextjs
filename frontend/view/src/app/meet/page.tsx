@@ -18,17 +18,21 @@ const Page: React.FC = () => {
   const remoteVideoRef = useRef<HTMLVideoElement | null>(null);
 
   useEffect(() => {
-    navigator.mediaDevices
-      .getUserMedia({ video: true, audio: true })
+    navigator.mediaDevices.getUserMedia({ video: true, audio: true })
       .then((stream) => {
         setLocalStream(stream);
         if (localVideoRef.current) {
           localVideoRef.current.srcObject = stream;
         }
+      })
+      .catch((error) => {
+        console.error("Error al acceder a la cámara y el micrófono:", error);
       });
 
     return () => {
-      peerRef.current?.destroy();
+      if (peerRef.current) {
+        peerRef.current.destroy();
+      }
     };
   }, []);
 
@@ -38,51 +42,58 @@ const Page: React.FC = () => {
     socket.addEventListener("open", () => {
       console.log("WebSocket connection established");
 
-      const peer = new Peer({ initiator: true, stream: localStream });
+      if (localStream) {
+        peerRef.current = new Peer({ initiator: true, stream: localStream });
 
-      peer.on("signal", (offer) => {
-        socket.send(JSON.stringify(offer));
-      });
+        peerRef.current.on("signal", (offer) => {
+          socket.send(JSON.stringify(offer ));
+        });
 
-      peer.on("stream", (stream) => {
-        setRemoteStream(stream);
-      });
-
-      socket.addEventListener("message", (event) => {
-        const message = JSON.parse(event.data);
-
-        if (message.type === "offer") {
-          // Procesar la oferta y generar la respuesta
-          const peer = new Peer({ initiator: false, stream: localStream });
-          peer.on("signal", (answer) => {
-            // Enviar la respuesta al participante 1 a través del WebSocket
-            socket.send(JSON.stringify(answer));
-          });
-
-          // Establecer la descripción de sesión del participante 1
-          peer.signal(message);
-        } else if (message.type === "answer") {
-          peer.signal(message);
-        } else if (message.type === "candidate") {
-          try {
-            peer.signal(message);
-          } catch (e) {
-            console.log(e);
-            console.log(message);
-          }
-        }
-      });
-
-      peerRef.current = peer;
+        peerRef.current.on("stream", (stream) => {
+          setRemoteStream(stream);
+        });
+      }
     });
 
-    socket.addEventListener("close", (event) => {
-      console.log("Conexión WebSocket cerrada:", event.code, event.reason);
+    socket.addEventListener("message", (event) => {
+      const message = JSON.parse(event.data);
+
+      if (message.type === "offer") {
+        if (!peerRef.current && localStream) {
+          peerRef.current = new Peer({ initiator: false, stream: localStream });
+
+          peerRef.current.on("signal", (answer) => {
+            socket.send(JSON.stringify(answer ));
+          });
+
+          peerRef.current.on("stream", (stream) => {
+            setRemoteStream(stream);
+          });
+        }
+
+        if (peerRef.current) {
+          peerRef.current.signal(message);
+        }
+      } else if (message.type === "answer" && peerRef.current) {
+        peerRef.current.signal(message);
+      } else if (message.type === "candidate" && peerRef.current) {
+        try {
+          peerRef.current.signal(message);
+        } catch (e) {
+          console.error("Error al procesar el candidato de ICE:", e);
+        }
+      }
+    });
+
+    socket.addEventListener("close", () => {
+      console.log("WebSocket connection closed");
     });
 
     return () => {
       socket.close();
-      peerRef.current?.destroy();
+      if (peerRef.current) {
+        peerRef.current.destroy();
+      }
     };
   }, [localStream]);
 
