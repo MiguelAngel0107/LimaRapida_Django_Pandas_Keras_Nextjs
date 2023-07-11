@@ -1,101 +1,110 @@
 "use client";
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState, VideoHTMLAttributes } from "react";
 import Peer from "simple-peer";
 import { APP_URL_WS_BACK } from "@/globals";
 import Camera from "@/components/meet/camera";
 
 const Page: React.FC = () => {
-  const socket = useRef<WebSocket | null>(null);
+  const peerRef = useRef<Peer.Instance | null>(null);
+
+  const [localStream, setLocalStream] = useState<MediaStream | undefined>(
+    undefined
+  );
+  const [remoteStream, setRemoteStream] = useState<MediaStream | undefined>(
+    undefined
+  );
+
   const localVideoRef = useRef<HTMLVideoElement | null>(null);
-  const peer = useRef<Peer.Instance | null>(null);
   const remoteVideoRef = useRef<HTMLVideoElement | null>(null);
 
   useEffect(() => {
-    // Establecer la conexión WebSocket
-    socket.current = new WebSocket(`${APP_URL_WS_BACK}/ws/video/holamundo/`);
-
-    // Escuchar eventos de la conexión WebSocket
-    socket.current.onopen = () => {
-      console.log("Conexión WebSocket abierta");
-      // Aquí puedes realizar cualquier otra lógica adicional cuando la conexión se abre
-    };
-
-    socket.current.onmessage = (event) => {
-      console.log("Mensaje recibido:", event.data);
-      // Aquí puedes procesar los mensajes recibidos del servidor
-      const signal = JSON.parse(event.data);
-      peer.current?.signal(signal);
-    };
-
-    socket.current.onclose = (event) => {
-      console.log("Conexión WebSocket cerrada:", event.code, event.reason);
-      // Aquí puedes realizar cualquier otra lógica adicional cuando la conexión se cierra
-    };
+    navigator.mediaDevices
+      .getUserMedia({ video: true, audio: true })
+      .then((stream) => {
+        setLocalStream(stream);
+        if (localVideoRef.current) {
+          localVideoRef.current.srcObject = stream;
+        }
+      });
 
     return () => {
-      // Cerrar la conexión WebSocket al desmontar el componente
-      socket.current?.close();
+      peerRef.current?.destroy();
     };
   }, []);
 
   useEffect(() => {
-    // Obtener el stream de video y audio del usuario
-    navigator.mediaDevices
-      .getUserMedia({ video: true, audio: true })
-      .then((stream) => {
-        console.log('Got MediaStream:', stream);
-        
-        // Configurar la instancia de Peer
-        peer.current = new Peer({
-          initiator: true, // O false dependiendo del caso
-          stream: stream,
-          // Otras opciones según tus necesidades
-        });
+    const socket = new WebSocket(`${APP_URL_WS_BACK}/ws/video/holamundo/`);
 
-        // Manejar eventos de señalización de Peer
-        peer.current.on("signal", (data: any) => {
-          // Enviar la señal al servidor de señalización a través del WebSocket
-          // console.log(JSON.stringify(data));
+    socket.addEventListener("open", () => {
+      console.log("WebSocket connection established");
 
-          socket.current?.send(JSON.stringify(data));
-        });
+      const peer = new Peer({ initiator: true, stream: localStream });
 
-        // Manejar eventos de conexión y flujo de video remoto
-        peer.current.on("connect", () => {
-          console.log("La conexión WebRTC se ha establecido");
-          // La conexión WebRTC se ha establecido
-          // ...
-        });
-
-        peer.current.on("stream", (stream: any) => {
-          // Obtener el stream de video remoto y establecerlo en el elemento de video HTML
-          if (remoteVideoRef.current) {
-            remoteVideoRef.current.srcObject = stream;
-          }
-        });
-
-        // Establecer el stream de video local en un elemento de video HTML
-        if (localVideoRef.current) {
-          localVideoRef.current.srcObject = stream;
-        }
-
-      })
-      .catch((error) => {
-        console.error("Error al acceder a la cámara y el micrófono:", error);
+      peer.on("signal", (offer) => {
+        socket.send(JSON.stringify(offer));
       });
 
+      peer.on("stream", (stream) => {
+        setRemoteStream(stream);
+      });
+
+      socket.addEventListener("message", (event) => {
+        const message = JSON.parse(event.data);
+
+        if (message.type === "offer") {
+          // Procesar la oferta y generar la respuesta
+          const peer = new Peer({ initiator: false, stream: localStream });
+          peer.on("signal", (answer) => {
+            // Enviar la respuesta al participante 1 a través del WebSocket
+            socket.send(JSON.stringify(answer));
+          });
+
+          // Establecer la descripción de sesión del participante 1
+          peer.signal(message);
+        } else if (message.type === "answer") {
+          peer.signal(message);
+        } else if (message.type === "candidate") {
+          try {
+            peer.signal(message);
+          } catch (e) {
+            console.log(e);
+            console.log(message);
+          }
+        }
+      });
+
+      peerRef.current = peer;
+    });
+
+    socket.addEventListener("close", (event) => {
+      console.log("Conexión WebSocket cerrada:", event.code, event.reason);
+    });
+
     return () => {
-      // Cerrar la conexión Peer al desmontar el componente
-      peer.current?.destroy();
+      socket.close();
+      peerRef.current?.destroy();
     };
-  }, []);
+  }, [localStream]);
+
+  useEffect(() => {
+    if (localVideoRef.current && localStream) {
+      localVideoRef.current.srcObject = localStream;
+    }
+  }, [localStream]);
+
+  useEffect(() => {
+    if (remoteVideoRef.current && remoteStream) {
+      remoteVideoRef.current.srcObject = remoteStream;
+    }
+  }, [remoteStream]);
 
   return (
     <div>
       <h1>Next.js Webcam Example</h1>
       {/*<Camera />*/}
-      <video ref={localVideoRef} autoPlay muted />
-      <video ref={remoteVideoRef} autoPlay muted />
+
+      {localStream && <video ref={localVideoRef} autoPlay muted />}
+      {remoteStream && <video ref={remoteVideoRef} autoPlay muted />}
     </div>
   );
 };

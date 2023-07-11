@@ -54,6 +54,15 @@ class VideoCallConsumer(AsyncWebsocketConsumer):
                     'sender_channel_name': self.channel_name
                 }
             )
+        elif signal_type == 'answer':
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    'type': 'forward_answer',
+                    'sdp': sdp,
+                    'sender_channel_name': self.channel_name
+                }
+            )
         elif signal_type == 'candidate':
             # Enviar el candidato recibido a todos los miembros del grupo de la sala (excepto al remitente)
             await self.channel_layer.group_send(
@@ -83,6 +92,17 @@ class VideoCallConsumer(AsyncWebsocketConsumer):
         if self.channel_name != sender_channel_name:
             await self.send(text_data=json.dumps({
                 'type': 'offer',
+                'sdp': sdp
+            }))
+
+    async def forward_answer(self, event):
+        # Enviar la respuesta recibida a todos los miembros del grupo de la sala (excepto al remitente original)
+        sdp = event['sdp']
+        sender_channel_name = event['sender_channel_name']
+
+        if self.channel_name != sender_channel_name:
+            await self.send(text_data=json.dumps({
+                'type': 'answer',
                 'sdp': sdp
             }))
 
