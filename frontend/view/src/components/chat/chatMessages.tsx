@@ -26,6 +26,8 @@ function ChatMessages() {
     socket.addEventListener("message", (event) => {
       const newData = JSON.parse(event.data);
       setListMessage((prevState) => [...prevState, newData]);
+      
+      console.log("Recibi ese Mensaje",newData);
     });
 
     socket.addEventListener("close", () => {

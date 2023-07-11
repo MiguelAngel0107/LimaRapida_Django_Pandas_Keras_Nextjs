@@ -1,4 +1,4 @@
-'use client'
+"use client";
 import React, { useRef, useEffect } from "react";
 import Peer from "simple-peer";
 import { APP_URL_WS_BACK } from "@/globals";
@@ -8,6 +8,7 @@ const Page: React.FC = () => {
   const socket = useRef<WebSocket | null>(null);
   const localVideoRef = useRef<HTMLVideoElement | null>(null);
   const peer = useRef<Peer.Instance | null>(null);
+  const remoteVideoRef = useRef<HTMLVideoElement | null>(null);
 
   useEffect(() => {
     // Establecer la conexión WebSocket
@@ -22,6 +23,8 @@ const Page: React.FC = () => {
     socket.current.onmessage = (event) => {
       console.log("Mensaje recibido:", event.data);
       // Aquí puedes procesar los mensajes recibidos del servidor
+      const signal = JSON.parse(event.data);
+      peer.current?.signal(signal);
     };
 
     socket.current.onclose = (event) => {
@@ -40,6 +43,8 @@ const Page: React.FC = () => {
     navigator.mediaDevices
       .getUserMedia({ video: true, audio: true })
       .then((stream) => {
+        console.log('Got MediaStream:', stream);
+        
         // Configurar la instancia de Peer
         peer.current = new Peer({
           initiator: true, // O false dependiendo del caso
@@ -48,18 +53,21 @@ const Page: React.FC = () => {
         });
 
         // Manejar eventos de señalización de Peer
-        peer.current.on("signal", (data:any) => {
+        peer.current.on("signal", (data: any) => {
           // Enviar la señal al servidor de señalización a través del WebSocket
+          // console.log(JSON.stringify(data));
+
           socket.current?.send(JSON.stringify(data));
         });
 
         // Manejar eventos de conexión y flujo de video remoto
         peer.current.on("connect", () => {
+          console.log("La conexión WebRTC se ha establecido");
           // La conexión WebRTC se ha establecido
           // ...
         });
 
-        peer.current.on("stream", (stream:any) => {
+        peer.current.on("stream", (stream: any) => {
           // Obtener el stream de video remoto y establecerlo en el elemento de video HTML
           if (remoteVideoRef.current) {
             remoteVideoRef.current.srcObject = stream;
@@ -70,6 +78,7 @@ const Page: React.FC = () => {
         if (localVideoRef.current) {
           localVideoRef.current.srcObject = stream;
         }
+
       })
       .catch((error) => {
         console.error("Error al acceder a la cámara y el micrófono:", error);
@@ -81,14 +90,12 @@ const Page: React.FC = () => {
     };
   }, []);
 
-  const remoteVideoRef = useRef<HTMLVideoElement | null>(null);
-
   return (
     <div>
       <h1>Next.js Webcam Example</h1>
       {/*<Camera />*/}
       <video ref={localVideoRef} autoPlay muted />
-      <video ref={remoteVideoRef} autoPlay />
+      <video ref={remoteVideoRef} autoPlay muted />
     </div>
   );
 };
