@@ -18,7 +18,8 @@ const Page: React.FC = () => {
   const remoteVideoRef = useRef<HTMLVideoElement | null>(null);
 
   useEffect(() => {
-    navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+    navigator.mediaDevices
+      .getUserMedia({ video: true, audio: true })
       .then((stream) => {
         setLocalStream(stream);
         if (localVideoRef.current) {
@@ -46,7 +47,7 @@ const Page: React.FC = () => {
         peerRef.current = new Peer({ initiator: true, stream: localStream });
 
         peerRef.current.on("signal", (offer) => {
-          socket.send(JSON.stringify(offer ));
+          socket.send(JSON.stringify(offer));
         });
 
         peerRef.current.on("stream", (stream) => {
@@ -63,7 +64,7 @@ const Page: React.FC = () => {
           peerRef.current = new Peer({ initiator: false, stream: localStream });
 
           peerRef.current.on("signal", (answer) => {
-            socket.send(JSON.stringify(answer ));
+            socket.send(JSON.stringify(answer));
           });
 
           peerRef.current.on("stream", (stream) => {
