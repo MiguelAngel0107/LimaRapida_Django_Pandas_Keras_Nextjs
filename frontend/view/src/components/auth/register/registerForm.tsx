@@ -20,7 +20,7 @@ const RegisterForm: React.FC = () => {
 
   useEffect(() => {
     // Llama a la función check_authenticated al montar el componente
-    dispatch(check_authenticated());
+    //dispatch(check_authenticated());
   }, []);
 
   const [formData, setFormData] = useState<FormData>({
@@ -37,7 +37,7 @@ const RegisterForm: React.FC = () => {
 
   const onSubmit = (e: FormEvent) => {
     e.preventDefault();
-    dispatch(signup(name, email, password, re_password, wallet_address));
+    //dispatch(signup(name, email, password, re_password, wallet_address));
     router.push("/auth/login");
   };
   return (
