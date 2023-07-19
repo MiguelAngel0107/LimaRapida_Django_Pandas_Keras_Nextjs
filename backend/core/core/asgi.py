@@ -15,7 +15,6 @@ from channels.routing import ProtocolTypeRouter, URLRouter
 from channels.auth import AuthMiddlewareStack
 from apps.chat.routing import websocket_urlpatterns as ws_url_chat
 from apps.meet.routing import websocket_urlpatterns as ws_url_meet
-
 from channels.security.websocket import AllowedHostsOriginValidator
 
 import django
