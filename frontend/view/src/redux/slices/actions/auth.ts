@@ -82,16 +82,16 @@ export const signup =
 
       if (res.status === 201) {
         dispatch(SIGNUP_SUCCESS(res.data));
-        dispatch(
-          setAlert("Te enviamos un correo, porfavor activa tu cuenta", "green")
-        );
+        //dispatch(
+        //  setAlert("Te enviamos un correo, porfavor activa tu cuenta", "green")
+        //);
       } else {
         dispatch(SIGNUP_FAIL());
-        dispatch(setAlert("Error al crear cuenta", "red"));
+        //dispatch(setAlert("Error al crear cuenta", "red"));
       }
     } catch (err) {
       dispatch(SIGNUP_FAIL());
-      dispatch(setAlert("Error con el servidor, intenta mas tarde", "red"));
+      //dispatch(setAlert("Error con el servidor, intenta mas tarde", "red"));
     }
   };
 
@@ -119,15 +119,15 @@ export const login =
 
       if (res.status === 200) {
         dispatch(LOGIN_SUCCESS(res.data));
-        dispatch(setAlert("Inicio de sesión con éxito", "green"));
+        //dispatch(setAlert("Inicio de sesión con éxito", "green"));
       } else {
         dispatch(LOGIN_FAIL());
 
-        dispatch(setAlert("Error al iniciar sesion", "red"));
+        //dispatch(setAlert("Error al iniciar sesion", "red"));
       }
     } catch (err) {
       dispatch(LOGIN_FAIL());
-      dispatch(setAlert("Error al iniciar sesion. Intenta mas tarde", "red"));
+      //dispatch(setAlert("Error al iniciar sesion. Intenta mas tarde", "red"));
     }
   };
 
@@ -166,7 +166,7 @@ export const refresh = () => async (dispatch: Dispatch<AnyAction>) => {
 export const logout = () => (dispatch: Dispatch<AnyAction>) => {
   console.log("cerrado actions");
   dispatch(LOGOUT());
-  dispatch(setAlert("Succesfully logged out", "green"));
+  //dispatch(setAlert("Succesfully logged out", "green"));
 };
 
 //export const loginMetamask = () => async (dispatch: any) => {
