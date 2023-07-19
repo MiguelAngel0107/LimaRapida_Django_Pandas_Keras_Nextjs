@@ -114,9 +114,10 @@ const Page: React.FC = () => {
     <div>
       <h1>Next.js Webcam Example</h1>
       {/*<Camera />*/}
-
-      {localStream && <video ref={localVideoRef} autoPlay muted />}
-      {remoteStream && <video ref={remoteVideoRef} autoPlay muted />}
+      <div >
+        {localStream && <video ref={localVideoRef} autoPlay muted />}
+        {remoteStream && <video ref={remoteVideoRef} autoPlay muted />}
+      </div>
     </div>
   );
 };
