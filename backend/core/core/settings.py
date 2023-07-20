@@ -146,14 +146,6 @@ CHANNEL_LAYERS = {
 }
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'LimaRapida',  # 'LimaRapida',
-        'USER': 'postgres',
-        'PASSWORD': 'saudofox2690',
-        'HOST': 'localhost',
-        'PORT': 5432,
-    },
     'mongodb': {
         'ENGINE': 'djongo',
         'NAME': 'LimaRapidaDev',  # LimaRapida
@@ -163,11 +155,11 @@ DATABASES = {
             # 'authMechanism': 'SCRAM-SHA-1',
         }
     },
-    # 'default': dj_database_url.config(
-    #    default=config('DATABASE'),
-    #    conn_max_age=600,
-    #    conn_health_checks=True,
-    # )
+    'default': dj_database_url.config(
+       default=config('DATABASE'),
+       conn_max_age=600,
+       conn_health_checks=True,
+    )
 }
 
 CORS_ALLOW_ALL_ORIGINS = True
