@@ -58,7 +58,7 @@ INSTALLED_APPS = APPS_DEFAULT + PRIMARY_APPS + SECONDARY_APPS + TERTIARY_APPS
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated'
+        'rest_framework.permissions.IsAuthenticated' #AllowAny, IsAuthenticated
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
@@ -146,14 +146,6 @@ CHANNEL_LAYERS = {
 }
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'LimaRapida',  # 'LimaRapida',
-        'USER': 'postgres',
-        'PASSWORD': 'saudofox2690',
-        'HOST': 'localhost',
-        'PORT': 5432,
-    },
     'mongodb': {
         'ENGINE': 'djongo',
         'NAME': 'LimaRapidaDev',  # LimaRapida
@@ -163,11 +155,11 @@ DATABASES = {
             # 'authMechanism': 'SCRAM-SHA-1',
         }
     },
-    # 'default': dj_database_url.config(
-    #    default=config('DATABASE'),
-    #    conn_max_age=600,
-    #    conn_health_checks=True,
-    # )
+    'default': dj_database_url.config(
+       default=config('DATABASE'),
+       conn_max_age=600,
+       conn_health_checks=True,
+    )
 }
 
 CORS_ALLOW_ALL_ORIGINS = True
@@ -207,6 +199,9 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles/')
+
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
+MEDIA_URL = '/media/'
 
 AUTH_USER_MODEL = "user.CustomUser"
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

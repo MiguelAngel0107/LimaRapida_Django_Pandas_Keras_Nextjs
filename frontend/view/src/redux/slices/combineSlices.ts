@@ -1,7 +1,11 @@
 import { combineReducers } from "redux";
 
-const rootReducer = combineReducers({});
+import AlertReducer from "@/redux/slices/reducers/alert";
+import AuthReducer from '@/redux/slices/reducers/auth'
 
-export type RootState = ReturnType<typeof rootReducer>
+const rootReducer = combineReducers({
+  Alert: AlertReducer,
+  Auth: AuthReducer
+});
 
 export default rootReducer;
