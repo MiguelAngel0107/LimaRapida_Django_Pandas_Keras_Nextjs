@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { useState, ChangeEvent, FormEvent, useEffect } from "react";
 import { useDispatch } from "react-redux";
+import { useAppDispatch } from "@/redux/hooks";
 import { signup, check_authenticated } from "@/redux/slices/actions/auth";
 
 interface FormData {
@@ -15,12 +16,12 @@ interface FormData {
 }
 
 const RegisterForm: React.FC = () => {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const router = useRouter();
 
   useEffect(() => {
     // Llama a la función check_authenticated al montar el componente
-    //dispatch(check_authenticated());
+    dispatch(check_authenticated());
   }, []);
 
   const [formData, setFormData] = useState<FormData>({

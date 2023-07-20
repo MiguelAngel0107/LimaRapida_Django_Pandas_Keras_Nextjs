@@ -3,6 +3,7 @@ import React, { useRef, useEffect, useState, VideoHTMLAttributes } from "react";
 import Peer from "simple-peer";
 import { APP_URL_WS_BACK } from "@/globals";
 import Camera from "@/components/meet/camera";
+import { sendImageToServer } from "@/redux/slices/actions/meet";
 
 const Page: React.FC = () => {
   const peerRef = useRef<Peer.Instance | null>(null);
@@ -26,6 +27,8 @@ const Page: React.FC = () => {
   const [capturedImageLocal, setCapturedImageLocal] = useState<
     string | undefined
   >(undefined);
+
+  const [count, setCount] = useState<number>(0);
 
   useEffect(() => {
     navigator.mediaDevices
@@ -120,6 +123,15 @@ const Page: React.FC = () => {
     }
   }, [remoteStream]);
 
+  useEffect(() => {
+    const intervalId = setInterval(async () => {
+      if (localStream && count <= 10) {
+        await captureImageLocal();
+      }
+    }, 1000);
+    return () => clearInterval(intervalId);
+  }, [localStream, count]);
+
   const captureImage = () => {
     if (canvasRef.current && remoteVideoRef.current) {
       const canvas = canvasRef.current;
@@ -136,7 +148,8 @@ const Page: React.FC = () => {
     }
   };
 
-  const captureImageLocal = () => {
+  const captureImageLocal = async () => {
+    console.log(count);
     if (canvasRefLocal.current && localVideoRef.current) {
       const canvas = canvasRefLocal.current;
       const video = localVideoRef.current;
@@ -147,9 +160,29 @@ const Page: React.FC = () => {
         ?.drawImage(video, 0, 0, canvas.width, canvas.height);
       const imageUrl = canvas.toDataURL("image/png");
       // Aquí puedes enviar la imagen al servidor Django para su procesamiento con IA
-      console.log("Imagen capturada:", imageUrl);
+      // console.log("Imagen capturada:", imageUrl);
       setCapturedImageLocal(imageUrl);
+
+      // Crear un objeto FormData para enviar la imagen como multipart/form-data
+      const formData = new FormData();
+      formData.append("imagen", dataURItoBlob(imageUrl));
+
+      await sendImageToServer(formData, setCount);
     }
+  };
+
+  // Función para convertir la imagen en formato base64 a Blob
+  const dataURItoBlob = (dataURI: string) => {
+    const byteString = atob(dataURI.split(",")[1]);
+    const mimeString = dataURI.split(",")[0].split(":")[1].split(";")[0];
+    const arrayBuffer = new ArrayBuffer(byteString.length);
+    const intArray = new Uint8Array(arrayBuffer);
+
+    for (let i = 0; i < byteString.length; i++) {
+      intArray[i] = byteString.charCodeAt(i);
+    }
+
+    return new Blob([intArray], { type: mimeString });
   };
 
   return (
@@ -162,8 +195,10 @@ const Page: React.FC = () => {
 
         {localStream && (
           <div className="flex">
-            <div>
-              <video ref={localVideoRef} autoPlay muted />
+            <video ref={localVideoRef} autoPlay muted />
+            <canvas ref={canvasRefLocal} style={{ display: "none" }} />
+
+            {/*<div>
               <button
                 onClick={captureImageLocal}
                 className="text-gray-900 hover:text-white border border-gray-800 hover:bg-gray-900 focus:ring-4 focus:outline-none focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center mr-2 mb-2 dark:border-gray-600 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-600 dark:focus:ring-gray-800"
@@ -175,19 +210,15 @@ const Page: React.FC = () => {
               <>
                 <h2>Previsualización de la imagen capturada:</h2>
                 <canvas ref={canvasRefLocal} />
-                {/*capturedImageLocal && (
-            <div>
-              <img src={capturedImageLocal} alt="Captured" />
-            </div>
-          )*/}
+                
               </>
-            )}
+            )}*/}
           </div>
         )}
         {remoteStream && (
           <div className="flex">
-            <div>
-              <video ref={remoteVideoRef} autoPlay muted />
+            <video ref={remoteVideoRef} autoPlay muted />
+            {/*<div>
               <button
                 onClick={captureImage}
                 className="text-gray-900 hover:text-white border border-gray-800 hover:bg-gray-900 focus:ring-4 focus:outline-none focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center mr-2 mb-2 dark:border-gray-600 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-600 dark:focus:ring-gray-800"
@@ -199,13 +230,8 @@ const Page: React.FC = () => {
               <>
                 <h2>Previsualización de la imagen capturada:</h2>
                 <canvas ref={canvasRef} />
-                {/*capturedImage && (
-            <div>
-              <img src={capturedImage} alt="Captured" />
-            </div>
-          )*/}
               </>
-            )}
+            )}*/}
           </div>
         )}
       </div>
