@@ -14,6 +14,10 @@ class GuardarImagenAPIView(APIView):
         imagen_file = request.FILES.get('imagen')
 
         if imagen_file:
+            # Crear la carpeta de medios si no existe
+            if not os.path.exists(settings.MEDIA_ROOT):
+                os.makedirs(settings.MEDIA_ROOT)
+                
             # Guardar la imagen en la carpeta de medios
             nombre_archivo = f'{datetime.datetime.now().strftime("%Y%m%d%H%M%S")}.png'
             
