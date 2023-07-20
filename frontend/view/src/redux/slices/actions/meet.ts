@@ -10,7 +10,7 @@ export const sendImageToServer = async (
     const response = await axios.post<string>(
       `${APP_URL_HTTP_BACK}/meet/capturas-images/`,
       formData
-    //);
+    );
 
     if (response.status === 201) {
       console.log("servidor correctamente.");
