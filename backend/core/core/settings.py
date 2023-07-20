@@ -136,12 +136,12 @@ ASGI_APPLICATION = "core.asgi.application"
 
 CHANNEL_LAYERS = {
     "default": {
-        # "BACKEND": "channels.layers.InMemoryChannelLayer"
-        'BACKEND': 'channels_redis.core.RedisChannelLayer',
-        'CONFIG': {
-            # Configura la dirección y puerto de Redis
-            'hosts': [('localhost', 6379)],
-        },
+        "BACKEND": "channels.layers.InMemoryChannelLayer"
+        #'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        #'CONFIG': {
+        #    # Configura la dirección y puerto de Redis
+        #    'hosts': [('localhost', 6379)],
+        #},
     }
 }
 
