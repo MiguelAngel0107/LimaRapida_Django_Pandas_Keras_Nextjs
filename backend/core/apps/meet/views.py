@@ -22,6 +22,7 @@ class GuardarImagenAPIView(APIView):
             if not imagen_file.content_type.startswith('image/'):
                 return Response({'error': 'Invalid file type. Only images are allowed.'}, status=status.HTTP_400_BAD_REQUEST)
 
+
             try:
                 # Guarda la imagen en S3 usando MediaStorage
                 image_path = f'{datetime.datetime.now().strftime("%Y%m%d%H%M%S")}.png'
