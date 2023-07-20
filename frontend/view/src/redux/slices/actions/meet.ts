@@ -7,19 +7,19 @@ export const sendImageToServer = async (
 ) => {
   try {
     // Realizar la solicitud POST al servidor utilizando Axios
-    const response = await axios.post<string>(
-      `${APP_URL_HTTP_BACK}/meet/capturas-images/`,
-      formData
-    );
+    //const response = await axios.post<string>(
+    //  `${APP_URL_HTTP_BACK}/meet/capturas-images/`,
+    //  formData
+    //);
 
-    if (response.status === 201) {
+    //if (response.status === 201) {
       // console.log("Imagen enviada al servidor correctamente.");
-      setCount((state) => state + 1);
+    //  setCount((state) => state + 1);
       // Aquí puedes realizar acciones adicionales después de enviar la imagen.
-    } else {
-      setCount((state) => state + 1);
+    //} else {
+    //  setCount((state) => state + 1);
       // console.error("Error al enviar la imagen al servidor.");
-    }
+    //}
   } catch (error) {
     // console.error("Error en la solicitud:", error);
   }
