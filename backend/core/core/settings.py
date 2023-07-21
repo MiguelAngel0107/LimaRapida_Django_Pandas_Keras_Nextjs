@@ -103,6 +103,8 @@ DJOSER = {
 }
 
 MIDDLEWARE = [
+    'whitenoise.middleware.WhiteNoiseMiddleware',
+    
     'corsheaders.middleware.CorsMiddleware',
 
     "django.middleware.security.SecurityMiddleware",
