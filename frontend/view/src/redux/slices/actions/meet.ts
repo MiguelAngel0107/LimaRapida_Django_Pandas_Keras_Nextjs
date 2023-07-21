@@ -16,7 +16,8 @@ export const sendImageToServer = async (
       // console.log("Imagen enviada al servidor correctamente.");
       setCount((state) => state + 1);
       // Aquí puedes realizar acciones adicionales después de enviar la imagen.
-    } else {
+      //} else {
+      setCount((state) => state + 1);
       // console.error("Error al enviar la imagen al servidor.");
     }
   } catch (error) {
