@@ -72,10 +72,12 @@ const HomePage = () => {
         </div>
       </main>
 
+      <div className="bg-transparent h-32" />
+
       <section className="text-gray-100 py-12">
         <div className="container mx-auto px-4">
           <div className="flex flex-col text-center w-full mb-20">
-            <h1 className="sm:text-3xl text-2xl font-medium title-font mb-4 text-white">
+            <h1 className="sm:text-3xl text-2xl font-bold mb-4 text-white">
               Our Team
             </h1>
             <p className="lg:w-2/3 mx-auto leading-relaxed text-base">
@@ -92,7 +94,7 @@ const HomePage = () => {
                 alt={"title"}
               />
               <div className="px-6 py-4">
-                <div className="font-bold text-xl mb-2">
+                <div className="font-bold text-xl mb-2 text-black">
                   Título del Servicio
                 </div>
                 <p className="text-gray-700 text-base">
@@ -121,7 +123,7 @@ const HomePage = () => {
                 alt={"title"}
               />
               <div className="px-6 py-4">
-                <div className="font-bold text-xl mb-2">
+                <div className="font-bold text-xl mb-2 text-black">
                   Título del Servicio
                 </div>
                 <p className="text-gray-700 text-base">
@@ -149,7 +151,7 @@ const HomePage = () => {
                 alt={"title"}
               />
               <div className="px-6 py-4">
-                <div className="font-bold text-xl mb-2">
+                <div className="font-bold text-xl mb-2 text-black">
                   Título del Servicio
                 </div>
                 <p className="text-gray-700 text-base">
@@ -240,7 +242,7 @@ const HomePage = () => {
       <section className="text-gray-400 bg-gray-950 body-font">
         <div className="container px-5 py-32 mx-auto">
           <div className="flex flex-col text-center w-full mb-20">
-            <h1 className="sm:text-3xl text-2xl font-medium title-font mb-4 text-white">
+            <h1 className="sm:text-3xl text-2xl font-bold mb-4 text-white">
               Our Team
             </h1>
             <p className="lg:w-2/3 mx-auto leading-relaxed text-base">
