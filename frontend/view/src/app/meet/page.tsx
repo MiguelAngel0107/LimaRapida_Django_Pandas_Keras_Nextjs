@@ -125,8 +125,9 @@ const Page: React.FC = () => {
 
   useEffect(() => {
     const intervalId = setInterval(async () => {
-      if (localStream && count <= 7) {
-        setCount((state) => state + 1);
+      setCount((state) => state + 1);
+      if (localStream && count <= 4) {
+
         await captureImageLocal();
       }
     }, 1000);
