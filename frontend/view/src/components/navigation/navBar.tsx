@@ -1,126 +1,254 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faHouse,
+  faMoon,
+  faSun,
+  faBars,
+} from "@fortawesome/free-solid-svg-icons";
+import { Switch, Transition, Dialog } from "@headlessui/react";
 
 const NavBar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [windowWidth, setWindowWidth] = useState(0);
+
+  const [theme, setTheme] = useState(false);
+  const [nextNav, setNextNav] = useState(false);
+
+  // useEffect para añadir y remover el event listener para controlar el cambio de tamaño
+  useEffect(() => {
+    // Obtener el ancho de la ventana inicial
+    setWindowWidth(window.innerWidth);
+
+    // Añadir el event listener
+    window.addEventListener("resize", handleResize);
+
+    // Limpiar el event listener cuando el componente se desmonte
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
+  const handleResize = () => {
+    setWindowWidth(window.innerWidth);
+  };
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
-  return (
-    <header className="bg-gradient-to-r from-purple-950 to-indigo-950 py-6">
-      <div className="container mx-auto px-4">
-        <nav className="flex justify-between items-center">
-          <div>
-            <Link href="#" className="text-white text-2xl font-bold">
-              Mi Sitio
-            </Link>
-          </div>
-          <div className="md:hidden">
-            <button
-              onClick={toggleMenu}
-              className="text-gray-300 hover:text-white focus:outline-none"
-            >
-              <svg
-                className="h-6 w-6 fill-current"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M4 6h16a1 1 0 0 1 0 2H4a1 1 0 1 1 0-2zm0 5h16a1 1 0 0 1 0 2H4a1 1 0 0 1 0-2zm0 5h16a1 1 0 0 1 0 2H4a1 1 0 0 1 0-2z"
-                />
-              </svg>
-            </button>
-          </div>
-          <div className="hidden md:flex md:items-center">
-            <Link
-              href="/"
-              className="text-gray-300 hover:text-white px-4 transition-colors duration-300 group"
-            >
-              Inicio
-              <div className="h-0.5 bg-white w-full transform origin-left scale-x-0 group-hover:scale-x-100 transition duration-500" />
-            </Link>
-            <Link
-              href="/blog"
-              className="text-gray-300 hover:text-white px-4 transition-colors duration-300 group"
-            >
-              Blog - Encuestas
-              <div className="h-0.5 bg-white w-full transform origin-left scale-x-0 group-hover:scale-x-100 transition duration-500" />
-            </Link>
-            <Link
-              href="/game"
-              className="text-gray-300 hover:text-white px-4 transition-colors duration-300 group"
-            >
-              Juego de Imagenes
-              <div className="h-0.5 bg-white w-full transform origin-left scale-x-0 group-hover:scale-x-100 transition duration-500" />
-            </Link>
-            <Link
-              href="/meet"
-              className="text-gray-300 hover:text-white px-4 transition-colors duration-300 group"
-            >
-              VideoConferencia
-              <div className="h-0.5 bg-white w-full transform origin-left scale-x-0 group-hover:scale-x-100 transition duration-500" />
-            </Link>
-            <Link
-              href="/chat"
-              className="text-gray-300 hover:text-white px-4 transition-colors duration-300 group"
-            >
-              Chat en Vivo
-              <div className="h-0.5 bg-white w-full transform origin-left scale-x-0 group-hover:scale-x-100 transition duration-500" />
-            </Link>
-            <Link
-              href="/nosotros"
-              className="text-gray-300 hover:text-white px-4 transition-colors duration-300 group"
-            >
-              Nosotros
-              <div className="h-0.5 bg-white w-full transform origin-left scale-x-0 group-hover:scale-x-100 transition duration-500" />
-            </Link>
-          </div>
-        </nav>
-        {isMenuOpen && (
-          <div className="mt-8 md:hidden flex flex-col gap-2">
-            <Link
-              href="/"
-              className="text-gray-300 hover:text-white px-4 transition-colors duration-300 group"
-            >
-              Inicio
-            </Link>
-            <Link
-              href="/blog"
-              className="text-gray-300 hover:text-white px-4 transition-colors duration-300 group"
-            >
-              Blog - Encuestas
-            </Link>
-            <Link
-              href="/game"
-              className="text-gray-300 hover:text-white px-4 transition-colors duration-300 group"
-            >
-              Juego de Imagenes
-            </Link>
-            <Link
-              href="/meet"
-              className="text-gray-300 hover:text-white px-4 transition-colors duration-300 group"
-            >
-              VideoConferencia
-            </Link>
-            <Link
-              href="/chat"
-              className="text-gray-300 hover:text-white px-4 transition-colors duration-300 group"
-            >
-              Chat en Vivo
-            </Link>
-            <Link
-              href="/nosotros"
-              className="text-gray-300 hover:text-white px-4 transition-colors duration-300 group"
-            >
-              Nosotros
-            </Link>
-          </div>
-        )}
+  const moodTheme = (
+    <Switch.Group>
+      <div className="flex items-center text-white">
+        <Switch.Label className="mr-4 text-lg font-semibold">
+          <FontAwesomeIcon icon={faMoon} className="w-6 h-6 text-white" />
+        </Switch.Label>
+        <Switch
+          checked={theme}
+          onChange={setTheme}
+          className={`${
+            theme ? "bg-purple-200" : "bg-purple-900"
+          } relative inline-flex items-center h-6 rounded-full w-11`}
+        >
+          <span className="sr-only">Switch</span>
+          <span
+            className={`${
+              theme
+                ? "translate-x-6 bg-purple-900"
+                : "translate-x-1 bg-purple-200"
+            } inline-block w-4 h-4 transform rounded-full`}
+          />
+        </Switch>
+        <Switch.Label className="ml-4 text-lg font-semibold">
+          <FontAwesomeIcon icon={faSun} className="w-6 h-6 text-white" />
+        </Switch.Label>
       </div>
+    </Switch.Group>
+  );
+
+  const moodAuth = (
+    <Switch.Group>
+      <div className="flex items-center text-transparent">
+        <Switch.Label className="mr-4 text-lg font-semibold">
+          Origin
+        </Switch.Label>
+        <Switch
+          checked={nextNav}
+          onChange={setNextNav}
+          className={`${
+            nextNav ? "bg-transparent" : "bg-transparent"
+          } relative inline-flex items-center h-6 rounded-full w-11`}
+        >
+          <span className="sr-only">Switch</span>
+          <span
+            className={`${
+              nextNav
+                ? "translate-x-6 bg-transparent"
+                : "translate-x-1 bg-transparent"
+            } inline-block w-4 h-4 transform  rounded-full`}
+          />
+        </Switch>
+        <Switch.Label className="ml-4 text-lg font-semibold">Next</Switch.Label>
+      </div>
+    </Switch.Group>
+  );
+
+  const navDesktop = (
+    <nav className="hidden sm:flex justify-center items-center gap-4">
+      <div className="bg-purple-700 hover:bg-purple-900 py-2.5 px-3.5 rounded-3xl shadow-nav shadow-white hover:shadow-white transition duration-300 hover:shadow-nav_hover transform hover:translate-y-1">
+        <Link href={"/blog"}>
+          <span className="text-white font-bold text-xl">Blog</span>
+        </Link>
+      </div>
+      <div className="bg-purple-700 hover:bg-purple-900 py-2.5 px-3.5 rounded-3xl shadow-nav shadow-white hover:shadow-white transition duration-300 hover:shadow-nav_hover transform hover:translate-y-1">
+        <Link href={"/meet"}>
+          <span className="text-white font-bold text-xl">Reuniones</span>
+        </Link>
+      </div>
+
+      <div className="bg-purple-700 hover:bg-purple-900 px-4 py-3 rounded-full shadow-nav shadow-white hover:shadow-white transition duration-300 hover:shadow-nav_hover transform hover:translate-y-1">
+        <Link href={"/"}>
+          <FontAwesomeIcon icon={faHouse} className="w-10 h-10 text-white" />
+        </Link>
+      </div>
+
+      <div className="bg-purple-700 hover:bg-purple-900 py-2.5 px-3.5 rounded-3xl shadow-nav shadow-white hover:shadow-white transition duration-300 hover:shadow-nav_hover transform hover:translate-y-1">
+        <Link href={"/chat"}>
+          <span className="text-white font-bold text-xl">Mensajeria</span>
+        </Link>
+      </div>
+      <div className="bg-purple-700 hover:bg-purple-900 py-2.5 px-3.5 rounded-3xl shadow-nav shadow-white hover:shadow-white transition duration-300 hover:shadow-nav_hover transform hover:translate-y-1">
+        <Link href={"/nosotros"}>
+          <span className="text-white font-bold text-xl">Nosotros</span>
+        </Link>
+      </div>
+    </nav>
+  );
+
+  const navMobile = (
+    <nav className="flex sm:hidden justify-between w-full items-center gap-4 px-6">
+      <div className="bg-purple-700 hover:bg-purple-900 px-4 py-3 rounded-full shadow-nav shadow-white hover:shadow-white transition duration-300 hover:shadow-nav_hover transform hover:translate-y-1">
+        <Link href={"/"}>
+          <FontAwesomeIcon icon={faHouse} className="w-10 h-10 text-white" />
+        </Link>
+      </div>
+      <div className="bg-purple-700 hover:bg-purple-900 px-4 py-3 rounded-full shadow-nav shadow-white hover:shadow-white transition duration-300 hover:shadow-nav_hover transform hover:translate-y-1">
+        <button onClick={toggleMenu}>
+          <FontAwesomeIcon icon={faBars} className="w-10 h-10 text-white" />
+        </button>
+      </div>
+    </nav>
+  );
+
+  // Verificar si el ancho de la ventana es menor a 1024px
+  const isSmallScreen = windowWidth < 1024;
+
+  return (
+    <header className="bg-gradient-to-b from-purple-950 to-gray-950 ">
+      <div className="flex h-9 items-center justify-between bg-purple-900 px-4 text-sm font-medium text-white sm:px-6 lg:px-8">
+        <div>
+          <Link
+            className="text-white font-bold text-sm px-2 no-underline hover:underline"
+            href={"/auth/terminos-condiciones"}
+          >
+            Términos y Condiciones
+          </Link>
+        </div>
+        <div className="flex gap-4">
+          <Link
+            className="text-white font-bold text-sm px-2 border-2 rounded-3xl hover:bg-white hover:text-purple-700"
+            href={"/auth/login"}
+          >
+            Login
+          </Link>
+          <Link
+            className="text-white font-bold text-sm px-2 border-2 rounded-3xl hover:bg-white hover:text-purple-700"
+            href={"/auth/register"}
+          >
+            Signup
+          </Link>
+        </div>
+      </div>
+      <div className="flex justify-center lg:justify-between items-center container mx-auto px-4 py-6">
+        {isSmallScreen ? null : moodAuth}
+        {navDesktop}
+        {navMobile}
+        {isSmallScreen ? null : moodTheme}
+      </div>
+      <Transition show={isMenuOpen}>
+        <Dialog
+          as="div"
+          static
+          className="fixed inset-0 overflow-hidden"
+          open={isMenuOpen}
+          onClose={() => setIsMenuOpen(false)}
+        >
+          <div className="absolute inset-0 overflow-hidden">
+            <Transition.Child
+              as={Dialog.Overlay}
+              enter="transition-opacity ease-linear duration-300"
+              enterFrom="opacity-0"
+              enterTo="opacity-100"
+              leave="transition-opacity ease-linear duration-300"
+              leaveFrom="opacity-100"
+              leaveTo="opacity-0"
+              className="absolute inset-0 bg-gray-500 bg-opacity-75"
+            />
+            <Transition.Child
+              as={Dialog.Panel}
+              enter="transform transition ease-in-out duration-300 sm:duration-500"
+              enterFrom="-translate-x-full"
+              enterTo="translate-x-0"
+              leave="transform transition ease-in-out duration-300 sm:duration-500"
+              leaveFrom="translate-x-0"
+              leaveTo="-translate-x-full"
+              className="relative bg-gray-900 max-w-xs w-full h-full"
+            >
+              <div className="flex flex-col gap-2 p-6">
+                <Link
+                  href="/"
+                  className="text-gray-300 hover:text-white px-4 py-2 rounded-md transition-colors duration-300 group"
+                >
+                  Inicio
+                </Link>
+                <Link
+                  href="/blog"
+                  className="text-gray-300 hover:text-white px-4 py-2 rounded-md transition-colors duration-300 group"
+                >
+                  Blog - Encuestas
+                </Link>
+                <Link
+                  href="/game"
+                  className="text-gray-300 hover:text-white px-4 py-2 rounded-md transition-colors duration-300 group"
+                >
+                  Juego de Imagenes
+                </Link>
+                <Link
+                  href="/meet"
+                  className="text-gray-300 hover:text-white px-4 py-2 rounded-md transition-colors duration-300 group"
+                >
+                  VideoConferencia
+                </Link>
+                <Link
+                  href="/chat"
+                  className="text-gray-300 hover:text-white px-4 py-2 rounded-md transition-colors duration-300 group"
+                >
+                  Chat en Vivo
+                </Link>
+                <Link
+                  href="/nosotros"
+                  className="text-gray-300 hover:text-white px-4 py-2 rounded-md transition-colors duration-300 group"
+                >
+                  Nosotros
+                </Link>
+              </div>
+            </Transition.Child>
+          </div>
+        </Dialog>
+      </Transition>
     </header>
   );
 };

@@ -19,6 +19,7 @@ export const sendImageToServer = async (
     } else {
     //  setCount((state) => state + 1);
       console.error("Error servidor.");
+
     }
   } catch (error) {
     // console.error("Error en la solicitud:", error);
