@@ -2,7 +2,7 @@ import React from "react";
 
 function SideSettings() {
   return (
-    <div className="bg-gray-950 text-white p-4">
+    <div className="bg-transparent text-white p-4">
       <h2 className="text-lg font-medium mb-4">Configuraciones</h2>
       <div className="flex flex-col space-y-4">
         <div className="flex flex-col space-y-2">

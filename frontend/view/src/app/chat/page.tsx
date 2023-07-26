@@ -12,14 +12,14 @@ interface Message {
 
 const Chat: React.FC = () => {
   return (
-    <div className="flex h-screen bg-gray-500">
-      <div className="hidden h-96 sm:block">
+    <div className="grid grid-cols-10 bg-gray-950 mb-8 mt-4">
+      <div className="hidden md:block col-span-2 bg-gradient-to-t from-purple-950/60 to-gray-950 rounded-3xl mx-4">
         <ListContacts />
       </div>
-      <div className="w-full sm:flex-1">
+      <div className="w-full md:col-span-6 col-span-10 px-4 md:px-0">
         <ChatMessages />
       </div>
-      <div className="hidden sm:block">
+      <div className="hidden md:block col-span-2 bg-gradient-to-t from-purple-950/60 to-gray-950 rounded-3xl mx-4">
         <SideSettings />
       </div>
     </div>

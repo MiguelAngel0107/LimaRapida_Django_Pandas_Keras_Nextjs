@@ -7,6 +7,8 @@ import {
   LOGIN_FAIL,
   REFRESH_SUCCESS,
   REFRESH_FAIL,
+  USER_LOADED_SUCCESS,
+  USER_LOADED_FAIL,
   LOGOUT,
 } from "../reducers/auth";
 import { setAlert } from "./alert";
@@ -14,39 +16,59 @@ import axios from "axios";
 import { APP_URL_HTTP_BACK } from "@/globals";
 import { AppDispatch } from "@/redux/store";
 
+export const load_user = () => async (dispatch: AppDispatch) => {
+  if (localStorage.getItem("access")) {
+    const config = {
+      headers: {
+        Authorization: `JWT ${localStorage.getItem("access")}`,
+        Accept: "application/json",
+      },
+    };
+    try {
+      const res = await axios.get(
+        `${APP_URL_HTTP_BACK}/auth/users/me/`,
+        config
+      );
+      dispatch(USER_LOADED_SUCCESS(res.data));
+    } catch (err) {
+      dispatch(USER_LOADED_FAIL());
+    }
+  } else {
+    dispatch(USER_LOADED_FAIL());
+  }
+};
 
-export const check_authenticated =
-  () => async (dispatch: AppDispatch) => {
-    if (localStorage.getItem("access")) {
-      const config = {
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-      };
-      const body = JSON.stringify({
-        token: localStorage.getItem("access"),
-      });
+export const check_authenticated = () => async (dispatch: AppDispatch) => {
+  if (localStorage.getItem("access")) {
+    const config = {
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+    };
+    const body = JSON.stringify({
+      token: localStorage.getItem("access"),
+    });
 
-      try {
-        const res = await axios.post(
-          `${APP_URL_HTTP_BACK}/auth/jwt/verify/`,
-          body,
-          config
-        );
+    try {
+      const res = await axios.post(
+        `${APP_URL_HTTP_BACK}/auth/jwt/verify/`,
+        body,
+        config
+      );
 
-        if (res.status === 200) {
-          dispatch(AUTHENTICATED_SUCCESS());
-        } else {
-          dispatch(AUTHENTICATED_FAIL());
-        }
-      } catch (err) {
+      if (res.status === 200) {
+        dispatch(AUTHENTICATED_SUCCESS());
+      } else {
         dispatch(AUTHENTICATED_FAIL());
       }
-    } else {
+    } catch (err) {
       dispatch(AUTHENTICATED_FAIL());
     }
-  };
+  } else {
+    dispatch(AUTHENTICATED_FAIL());
+  }
+};
 
 export const signup =
   (
@@ -93,7 +115,7 @@ export const signup =
   };
 
 export const login =
-  (email: string, wallet_address: string, password: string) =>
+  (email: string, password: string, wallet_address: string) =>
   async (dispatch: AppDispatch) => {
     const config = {
       headers: {
@@ -103,8 +125,8 @@ export const login =
 
     const body = JSON.stringify({
       email,
-      wallet_address,
       password,
+      wallet_address,
     });
     console.log(body);
     try {
@@ -117,13 +139,15 @@ export const login =
       if (res.status === 200) {
         dispatch(LOGIN_SUCCESS(res.data));
         dispatch(setAlert("Inicio de sesión con éxito", "green"));
+        console.log(res.data);
       } else {
         dispatch(LOGIN_FAIL());
-
+        console.log(res.data);
         dispatch(setAlert("Error al iniciar sesion", "red"));
       }
     } catch (err) {
       dispatch(LOGIN_FAIL());
+      console.log(err);
       dispatch(setAlert("Error al iniciar sesion. Intenta mas tarde", "red"));
     }
   };
@@ -165,4 +189,3 @@ export const logout = () => (dispatch: AppDispatch) => {
   dispatch(LOGOUT());
   dispatch(setAlert("Succesfully logged out", "green"));
 };
-

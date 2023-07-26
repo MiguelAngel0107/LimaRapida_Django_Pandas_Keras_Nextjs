@@ -1,16 +1,40 @@
+from django.shortcuts import render
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, permissions
 
-
 # from .models import UserProfile
 from .serializers import UserProfileSerializer, UserPublicProfileSerializer
-from apps.user.models import UserAccount
+from apps.user.models import CustomUser
 from rest_framework.parsers import MultiPartParser, FormParser
 
 from django.core.files.storage import default_storage
 from django.core import serializers
+
+import requests
 import json
+
+
+def activate_account(request, key, token):
+    print("Valor de key:", key)
+    print("Valor de token:", token)
+
+    url = "http://localhost:8000/auth/users/activation/"
+
+    payload = json.dumps({
+        "uid": key,
+        "token": token
+    })
+    headers = {
+        'Content-Type': 'application/json'
+    }
+
+    response = requests.request("POST", url, headers=headers, data=payload)
+
+    print(response.text)
+
+    return render(request, 'activate/page.html')
 
 
 class UserProfileUpdate(APIView):
@@ -168,18 +192,18 @@ class PublicProfileUserView(APIView):
     def get(self, request, pk):
 
         try:
-            user_profile_object = UserAccount.objects.get(id=pk)
-            #print("hasta aqui llegue")
+            user_profile_object = CustomUser.objects.get(id=pk)
+            # print("hasta aqui llegue")
             user_profile = UserPublicProfileSerializer(user_profile_object)
 
             user_profile_data = user_profile.data
-            #print(user_profile_data)
+            # print(user_profile_data)
 
             # Agregar la función get_products a la respuesta
             products_json = serializers.serialize('json', user_profile_object.get_products(), fields=(
                 'name', 'photo', 'description', 'price', 'compare_price', 'category', 'quantity', 'sold'))
             products = json.loads(products_json)
-            #print(products)
+            # print(products)
             user_profile_data['products'] = products
 
             return Response(

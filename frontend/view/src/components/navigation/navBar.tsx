@@ -10,31 +10,28 @@ import {
   faBars,
 } from "@fortawesome/free-solid-svg-icons";
 import { Switch, Transition, Dialog } from "@headlessui/react";
+import { useAppSelector, useAppDispatch } from "@/redux/hooks";
+import {
+  logout,
+  refresh,
+  check_authenticated,
+  load_user,
+} from "@/redux/slices/actions/auth";
 
 const NavBar = () => {
+  const dispatch = useAppDispatch();
+  const isAutheticated = useAppSelector((state) => state.Auth.isAuthenticated);
+
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [windowWidth, setWindowWidth] = useState(0);
 
   const [theme, setTheme] = useState(false);
   const [nextNav, setNextNav] = useState(false);
 
-  // useEffect para añadir y remover el event listener para controlar el cambio de tamaño
   useEffect(() => {
-    // Obtener el ancho de la ventana inicial
-    setWindowWidth(window.innerWidth);
-
-    // Añadir el event listener
-    window.addEventListener("resize", handleResize);
-
-    // Limpiar el event listener cuando el componente se desmonte
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    };
+    dispatch(refresh());
+    dispatch(check_authenticated());
+    dispatch(load_user());
   }, []);
-
-  const handleResize = () => {
-    setWindowWidth(window.innerWidth);
-  };
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -96,13 +93,18 @@ const NavBar = () => {
     </Switch.Group>
   );
 
+  function ExitSession() {
+    dispatch(logout());
+  }
+
   const navDesktop = (
     <nav className="hidden sm:flex justify-center items-center gap-4">
       <div className="bg-purple-700 hover:bg-purple-900 py-2.5 px-3.5 rounded-3xl shadow-nav shadow-white hover:shadow-white transition duration-300 hover:shadow-nav_hover transform hover:translate-y-1">
         <Link href={"/blog"}>
-          <span className="text-white font-bold text-xl">Blog</span>
+          <span className="text-white font-bold text-xl">Buscar</span>
         </Link>
       </div>
+
       <div className="bg-purple-700 hover:bg-purple-900 py-2.5 px-3.5 rounded-3xl shadow-nav shadow-white hover:shadow-white transition duration-300 hover:shadow-nav_hover transform hover:translate-y-1">
         <Link href={"/meet"}>
           <span className="text-white font-bold text-xl">Reuniones</span>
@@ -121,8 +123,8 @@ const NavBar = () => {
         </Link>
       </div>
       <div className="bg-purple-700 hover:bg-purple-900 py-2.5 px-3.5 rounded-3xl shadow-nav shadow-white hover:shadow-white transition duration-300 hover:shadow-nav_hover transform hover:translate-y-1">
-        <Link href={"/nosotros"}>
-          <span className="text-white font-bold text-xl">Nosotros</span>
+        <Link href={"/blog"}>
+          <span className="text-white font-bold text-xl">Posting</span>
         </Link>
       </div>
     </nav>
@@ -143,9 +145,6 @@ const NavBar = () => {
     </nav>
   );
 
-  // Verificar si el ancho de la ventana es menor a 1024px
-  const isSmallScreen = windowWidth < 1024;
-
   return (
     <header className="bg-gradient-to-b from-purple-950 to-gray-950 ">
       <div className="flex h-9 items-center justify-between bg-purple-900 px-4 text-sm font-medium text-white sm:px-6 lg:px-8">
@@ -157,26 +156,44 @@ const NavBar = () => {
             Términos y Condiciones
           </Link>
         </div>
-        <div className="flex gap-4">
-          <Link
-            className="text-white font-bold text-sm px-2 border-2 rounded-3xl hover:bg-white hover:text-purple-700"
-            href={"/auth/login"}
-          >
-            Login
-          </Link>
-          <Link
-            className="text-white font-bold text-sm px-2 border-2 rounded-3xl hover:bg-white hover:text-purple-700"
-            href={"/auth/register"}
-          >
-            Signup
-          </Link>
-        </div>
+
+        {isAutheticated ? (
+          <div className="flex gap-4">
+            <Link
+              className="text-white font-bold text-sm px-2 border-2 rounded-3xl hover:bg-white hover:text-purple-700"
+              href={"/auth/user"}
+            >
+              Dashboard
+            </Link>
+            <button
+              onClick={ExitSession}
+              className="text-white font-bold text-sm px-2 border-2 rounded-3xl hover:bg-white hover:text-purple-700"
+            >
+              Exit
+            </button>
+          </div>
+        ) : (
+          <div className="flex gap-4">
+            <Link
+              className="text-white font-bold text-sm px-2 border-2 rounded-3xl hover:bg-white hover:text-purple-700"
+              href={"/auth/login"}
+            >
+              Login
+            </Link>
+            <Link
+              className="text-white font-bold text-sm px-2 border-2 rounded-3xl hover:bg-white hover:text-purple-700"
+              href={"/auth/register"}
+            >
+              Signup
+            </Link>
+          </div>
+        )}
       </div>
       <div className="flex justify-center lg:justify-between items-center container mx-auto px-4 py-6">
-        {isSmallScreen ? null : moodAuth}
+        <div className=" hidden lg:block">{moodAuth}</div>
         {navDesktop}
         {navMobile}
-        {isSmallScreen ? null : moodTheme}
+        <div className=" hidden lg:block">{moodTheme}</div>
       </div>
       <Transition show={isMenuOpen}>
         <Dialog

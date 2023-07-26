@@ -4,7 +4,13 @@ interface AuthState {
   access: string | null;
   refresh: string | null;
   isAuthenticated: boolean | null;
+  user: dataUserProps | null;
   isMetaMask: boolean | null;
+}
+interface dataUserProps {
+  name: string;
+  email: string;
+  id: number;
 }
 
 const initialState: AuthState = {
@@ -12,6 +18,7 @@ const initialState: AuthState = {
   refresh:
     typeof window !== "undefined" ? localStorage.getItem("refresh") : null,
   isAuthenticated: null,
+  user: null,
   isMetaMask: null,
 };
 
@@ -34,7 +41,7 @@ const authSlice = createSlice({
         access: null,
         refresh: null,
       };
-    }, 
+    },
     SIGNUP_SUCCESS() {},
     SIGNUP_FAIL(state) {},
     LOGIN_SUCCESS(
@@ -72,6 +79,12 @@ const authSlice = createSlice({
         isAuthenticated: false,
       };
     },
+    USER_LOADED_SUCCESS: (state, action: PayloadAction<any>) => {
+      state.user = action.payload;
+    },
+    USER_LOADED_FAIL: (state) => {
+      state.user = null;
+    },
     METAMASK_SUCCESS(state, action: PayloadAction<boolean>) {
       let payload = action.payload;
       return {
@@ -92,6 +105,8 @@ export const {
   REFRESH_SUCCESS,
   REFRESH_FAIL,
   LOGOUT,
+  USER_LOADED_SUCCESS,
+  USER_LOADED_FAIL,
   METAMASK_SUCCESS,
 } = authSlice.actions;
 export default authSlice.reducer;
