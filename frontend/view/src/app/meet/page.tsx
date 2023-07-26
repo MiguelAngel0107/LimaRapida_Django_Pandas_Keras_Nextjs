@@ -19,16 +19,12 @@ const Page: React.FC = () => {
   const remoteVideoRef = useRef<HTMLVideoElement | null>(null);
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const [capturedImage, setCapturedImage] = useState<string | undefined>(
-    undefined
-  );
-
   const canvasRefLocal = useRef<HTMLCanvasElement | null>(null);
-  const [capturedImageLocal, setCapturedImageLocal] = useState<
-    string | undefined
-  >(undefined);
 
   const [count, setCount] = useState<number>(0);
+
+  const [peers, setPeers] = useState<Peer.Instance[]>([]);
+  const peersRef = useRef<Peer.Instance[]>([]);
 
   useEffect(() => {
     navigator.mediaDevices
@@ -44,9 +40,9 @@ const Page: React.FC = () => {
       });
 
     return () => {
-      if (peerRef.current) {
-        peerRef.current.destroy();
-      }
+      //if (peerRef.current) {
+      //  peerRef.current.destroy();
+      //}
     };
   }, []);
 
@@ -84,7 +80,6 @@ const Page: React.FC = () => {
             setRemoteStream(stream);
           });
         }
-
         if (peerRef.current) {
           peerRef.current.signal(message);
         }
@@ -105,9 +100,9 @@ const Page: React.FC = () => {
 
     return () => {
       socket.close();
-      if (peerRef.current) {
-        peerRef.current.destroy();
-      }
+      //if (peerRef.current) {
+      //  peerRef.current.destroy();
+      //}
     };
   }, [localStream]);
 
@@ -145,7 +140,7 @@ const Page: React.FC = () => {
       const imageUrl = canvas.toDataURL("image/png");
       // Aquí puedes enviar la imagen al servidor Django para su procesamiento con IA
       console.log("Imagen capturada:", imageUrl);
-      setCapturedImage(imageUrl);
+      // setCapturedImage(imageUrl);
     }
   };
 
@@ -162,7 +157,7 @@ const Page: React.FC = () => {
       const imageUrl = canvas.toDataURL("image/png");
       // Aquí puedes enviar la imagen al servidor Django para su procesamiento con IA
       // console.log("Imagen capturada:", imageUrl);
-      setCapturedImageLocal(imageUrl);
+      // setCapturedImageLocal(imageUrl);
 
       // Crear un objeto FormData para enviar la imagen como multipart/form-data
       const formData = new FormData();

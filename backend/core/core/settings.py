@@ -104,7 +104,7 @@ DJOSER = {
 
 MIDDLEWARE = [
     'whitenoise.middleware.WhiteNoiseMiddleware',
-    
+
     'corsheaders.middleware.CorsMiddleware',
 
     "django.middleware.security.SecurityMiddleware",
@@ -137,16 +137,23 @@ TEMPLATES = [
 # WSGI_APPLICATION = "core.wsgi.application"
 ASGI_APPLICATION = "core.asgi.application"
 
-CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "channels.layers.InMemoryChannelLayer"
-        #'BACKEND': 'channels_redis.core.RedisChannelLayer',
-        #'CONFIG': {
-        #    # Configura la dirección y puerto de Redis
-        #    'hosts': [('localhost', 6379)],
-        #},
+if DEBUG:
+    CHANNEL_LAYERS = {
+        "default": {
+            'BACKEND': 'channels_redis.core.RedisChannelLayer',
+            'CONFIG': {
+                # Configura la dirección y puerto de Redis
+                'hosts': [('localhost', 6379)],
+            },
+        }
     }
-}
+else:
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels.layers.InMemoryChannelLayer"
+        }
+    }
+
 
 if DEBUG:
     DATABASES = {
@@ -235,8 +242,8 @@ MEDIA_URL = 'media/'
 MEDIA_ROOT = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, MEDIAFILES_LOCATION)
 DEFAULT_FILE_STORAGE = 'core.storage_backeds.MediaStorage'
 
-#MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
-#MEDIA_URL = '/media/'
+# MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
+# MEDIA_URL = '/media/'
 
 STATIC_URL = "static/"
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles/')
