@@ -151,7 +151,7 @@ const NavBar = () => {
         <div>
           <Link
             className="text-white font-bold text-sm px-2 no-underline hover:underline"
-            href={"/auth/terminos-condiciones"}
+            href={"/meet/testing"}
           >
             Términos y Condiciones
           </Link>
