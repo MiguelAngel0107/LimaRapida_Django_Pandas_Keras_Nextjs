@@ -147,6 +147,8 @@ class VideoCallConsumerTesting(AsyncWebsocketConsumer):
 
         sdp = data.get('sdp')
         candidate = data.get('candidate')
+        sdpMid = data.get('sdpMid')
+        sdpMLineIndex = data.get('sdpMLineIndex')
 
         msg_client = data.get('msg')
 
@@ -181,6 +183,8 @@ class VideoCallConsumerTesting(AsyncWebsocketConsumer):
                 {
                     'type': 'forward_candidate',
                     'candidate': candidate,
+                    'sdpMid': sdpMid,
+                    'sdpMLineIndex': sdpMLineIndex,
                     'sender_channel_name': self.channel_name
                 }
             )
@@ -193,7 +197,8 @@ class VideoCallConsumerTesting(AsyncWebsocketConsumer):
         if self.channel_name != sender_channel_name:
             await self.send(text_data=json.dumps({
                 'type': 'offer',
-                'sdp': sdp["sdp"]
+                'sdp': sdp["sdp"],
+                'idUser': sender_channel_name
             }))
 
     async def forward_answer(self, event):
@@ -204,16 +209,22 @@ class VideoCallConsumerTesting(AsyncWebsocketConsumer):
         if self.channel_name != sender_channel_name:
             await self.send(text_data=json.dumps({
                 'type': 'answer',
-                'sdp': sdp["sdp"]
+                'sdp': sdp["sdp"],
+                'idUser': sender_channel_name
             }))
 
     async def forward_candidate(self, event):
         # Enviar el candidato recibido a todos los miembros del grupo de la sala (excepto al remitente original)
         candidate = event['candidate']
+        sdpMid = event['sdpMid']
+        sdpMLineIndex = event['sdpMLineIndex']
         sender_channel_name = event['sender_channel_name']
 
         if self.channel_name != sender_channel_name:
             await self.send(text_data=json.dumps({
-                'type': 'ice_candidate',
-                'candidate': candidate["candidate"]
+                'type': 'candidate',
+                'candidate': candidate,  # ["candidate"],
+                'sdpMid': sdpMid,
+                'sdpMLineIndex': sdpMLineIndex,
+                'idUser': sender_channel_name
             }))

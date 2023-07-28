@@ -23,9 +23,6 @@ const Page: React.FC = () => {
 
   const [count, setCount] = useState<number>(0);
 
-  const [peers, setPeers] = useState<Peer.Instance[]>([]);
-  const peersRef = useRef<Peer.Instance[]>([]);
-
   useEffect(() => {
     navigator.mediaDevices
       .getUserMedia({ video: true, audio: true })
@@ -114,6 +111,7 @@ const Page: React.FC = () => {
 
   useEffect(() => {
     if (remoteVideoRef.current && remoteStream) {
+      console.log(remoteStream)
       remoteVideoRef.current.srcObject = remoteStream;
     }
   }, [remoteStream]);
