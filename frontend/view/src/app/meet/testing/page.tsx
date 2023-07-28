@@ -17,29 +17,21 @@ const Page: React.FC = () => {
   const [localStream, setLocalStream] = useState<MediaStream | undefined>(
     undefined
   );
+  const localStreamRef = useRef<MediaStream>();
   const localVideoRef = useRef<HTMLVideoElement | null>(null);
 
   const [connections, setConnections] = useState<Connection[]>([]);
   const connectionsRef = useRef<Connection[]>([]);
 
   const [remoteStreams, setRemoteStreams] = useState<MediaStream[]>([]);
-  const remoteVideoRefs = useRef<React.RefObject<HTMLVideoElement>[]>([]);
 
   const [socket, setSocket] = useState<WebSocket | null>(null);
-  const createPeerConnection = useRef<RTCPeerConnection | null>(null);
+  const createPeerConnection = useRef<RTCPeerConnection>();
 
   useEffect(() => {
     console.log("Conexiones:", connections);
     console.log("remoteStreams:", remoteStreams);
   }, [connections, remoteStreams]);
-
-  useEffect(() => {
-    // Actualiza las referencias de video cuando cambia el arreglo de MediaStream
-    remoteVideoRefs.current = remoteVideoRefs.current.slice(
-      0,
-      remoteStreams.length
-    );
-  }, [remoteStreams]);
 
   useEffect(() => {
     connectionsRef.current = connections;
@@ -77,6 +69,7 @@ const Page: React.FC = () => {
   useEffect(() => {
     if (localVideoRef.current && localStream) {
       console.log(localStream);
+      localStreamRef.current = localStream;
       localVideoRef.current.srcObject = localStream;
     }
   }, [localStream]);
@@ -98,38 +91,44 @@ const Page: React.FC = () => {
 
       if (type === "offer" && createPeerConnection.current) {
         const offerSdp = data; //payload.sdp;
-        const peerConnection = createPeerConnection.current;
-        addTracksToLocalConnection(peerConnection, localStream);
+        // const peerConnection = createPeerConnection.current;
+        addTracksToLocalConnection(
+          createPeerConnection.current,
+          localStreamRef.current
+        );
 
-        peerConnection.setRemoteDescription(
+        createPeerConnection.current.setRemoteDescription(
           new RTCSessionDescription(offerSdp)
         );
 
-        const answerSdp = await peerConnection.createAnswer();
+        const answerSdp = await createPeerConnection.current.createAnswer();
         // console.log("Tengo una respuesta:", answerSdp);
-        await controlDescriptionLocal(peerConnection, answerSdp);
+        await controlDescriptionLocal(createPeerConnection.current, answerSdp);
         //await peerConnection.setLocalDescription(answerSdp);
 
         socket?.send(JSON.stringify({ type: "send_answer", sdp: answerSdp }));
 
-        addConnection(peerConnection, idUser);
-      } else if (type === "answer") {
+        addConnection(createPeerConnection.current, idUser);
+      } else if (type === "answer" && createPeerConnection.current) {
         const answerSdp = data; //payload.sdp;
         const connection = findConnectionByUserId(idUser, type);
-        //console.log("Estado de Conexion para Answer:", connection);
         if (connection) {
+          console.log("Estado de Conexion para Answer:", connection);
+          console.log("Estado de sdp para Answer:", answerSdp);
           connection.peerConnection.setRemoteDescription(
             new RTCSessionDescription(answerSdp)
           );
         }
+        addConnection(createPeerConnection.current, idUser);
       } else if (type === "candidate") {
         const candidate = data; //payload.candidate;
         const connection = findConnectionByUserId(idUser, type);
-        //console.log("Estado de Conexion para ICE:", connection);
-        //console.log("Data:", candidate);
+        console.log("Estado FUERA de Conexion para Answer:", connection);
+        const iceCandidate = new RTCIceCandidate(candidate);
+        console.log("ICE generado", iceCandidate);
         if (connection) {
           connection.peerConnection.addIceCandidate(
-            new RTCIceCandidate(candidate)
+            new RTCIceCandidate(iceCandidate)
           );
         }
       }
@@ -145,35 +144,27 @@ const Page: React.FC = () => {
     };
   }, [socket]); // localstream
 
-  const createPeerConnectionFuntion = () => {
-    const peerConnection = new RTCPeerConnection();
-    peerConnection.onicecandidate = (event) => {
-      if (event.candidate) {
-        socket?.send(
-          JSON.stringify({
-            type: "send_ice_candidate",
-            candidate: event.candidate.candidate,
-            sdpMid: event.candidate.sdpMid,
-            sdpMLineIndex: event.candidate.sdpMLineIndex,
-          })
-        );
-      }
-    };
-    peerConnection.ontrack = (event) => {
-      console.log("Cambie el estado de los Streams");
-      setRemoteStreams((prevStreams) => [...prevStreams, ...event.streams]);
-    };
-    return peerConnection;
-  };
-
   const addTracksToLocalConnection = (
     peerConnection: RTCPeerConnection,
     stream: MediaStream | undefined
   ) => {
     if (stream) {
       stream.getTracks().forEach((track) => {
-        peerConnection.addTrack(track, stream); //
+        peerConnection.addTrack(track, stream);
       });
+
+      // Verificar si el MediaStream se agregó correctamente
+      const senders = peerConnection.getSenders();
+      const isStreamAdded = senders.some(
+        (sender) =>
+          sender.track && sender.track.kind === stream.getTracks()[0].kind
+      );
+
+      if (isStreamAdded) {
+        console.log("Agregué correctamente el MediaStream a WebRTC", stream);
+      } else {
+        console.log("Error al agregar el MediaStream a WebRTC");
+      }
     }
   };
 
@@ -210,11 +201,11 @@ const Page: React.FC = () => {
 
   const handleStartCall = async () => {
     if (localStream && createPeerConnection.current) {
-      const peerConnection = createPeerConnection.current;
-      addTracksToLocalConnection(peerConnection, localStream);
+      // const peerConnection = createPeerConnection.current;
+      addTracksToLocalConnection(createPeerConnection.current, localStream);
 
-      const offerSdp = await peerConnection.createOffer();
-      await controlDescriptionLocal(peerConnection, offerSdp);
+      const offerSdp = await createPeerConnection.current.createOffer();
+      await controlDescriptionLocal(createPeerConnection.current, offerSdp);
       //await peerConnection.setLocalDescription(offerSdp);
 
       socket?.send(
@@ -225,9 +216,36 @@ const Page: React.FC = () => {
         })
       );
 
-      addConnection(peerConnection, "Local");
+      // addConnection(createPeerConnection.current, "Local");
     }
   };
+
+  const createPeerConnectionFuntion = () => {
+    console.log("Se creo una instancia RTC");
+    return new RTCPeerConnection();
+  };
+
+  
+
+  if (createPeerConnection.current) {
+    createPeerConnection.current.onicecandidate = (event) => {
+      if (event.candidate) {
+        socket?.send(
+          JSON.stringify({
+            type: "send_ice_candidate",
+            candidate: event.candidate.candidate,
+            sdpMid: event.candidate.sdpMid,
+            sdpMLineIndex: event.candidate.sdpMLineIndex,
+          })
+        );
+      }
+    };
+
+    createPeerConnection.current.ontrack = (event) => {
+      console.log("Cambie el estado de los Streams");
+      setRemoteStreams((prevStreams) => [...prevStreams, ...event.streams]);
+    };
+  }
 
   return (
     <div>
@@ -242,8 +260,8 @@ const Page: React.FC = () => {
           // console.log("Ref Html:", stream); //(parameter) stream: MediaStream
           return (
             <div key={index} className="flex" id={`remote_${index}`}>
-             {/* <video ref={(ref) => (remoteVideoRefs.current[index] = ref)} srcObject={stream} autoPlay />*/}
-             <VideosRemotes stream={stream} id={index}/>
+              {/* <video ref={(ref) => (remoteVideoRefs.current[index] = ref)} srcObject={stream} autoPlay />*/}
+              <VideosRemotes stream={stream} id={index} />
             </div>
           );
         })}
