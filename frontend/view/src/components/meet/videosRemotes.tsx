@@ -49,7 +49,7 @@ function VideosRemotes(props: VideoRemoteProps) {
       
       localVideoRef.current.srcObject = localStream;
     }
-    console.log("Ref:", localVideoRef.current?.srcObject);
+    // console.log("Ref:", localVideoRef.current?.srcObject);
   }, [localStream]);
 
   return (

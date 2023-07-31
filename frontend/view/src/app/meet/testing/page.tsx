@@ -28,6 +28,8 @@ const Page: React.FC = () => {
   const [socket, setSocket] = useState<WebSocket | null>(null);
   const createPeerConnection = useRef<RTCPeerConnection>();
 
+  const iceCandidateQueue = [] as RTCIceCandidate[];
+
   useEffect(() => {
     console.log("Conexiones:", connections);
     console.log("remoteStreams:", remoteStreams);
@@ -111,26 +113,24 @@ const Page: React.FC = () => {
         addConnection(createPeerConnection.current, idUser);
       } else if (type === "answer" && createPeerConnection.current) {
         const answerSdp = data; //payload.sdp;
-        const connection = findConnectionByUserId(idUser, type);
-        if (connection) {
-          console.log("Estado de Conexion para Answer:", connection);
-          console.log("Estado de sdp para Answer:", answerSdp);
-          connection.peerConnection.setRemoteDescription(
-            new RTCSessionDescription(answerSdp)
-          );
-        }
+        // console.log("Estado de sdp para Answer:", answerSdp);
+        createPeerConnection.current.setRemoteDescription(
+          new RTCSessionDescription(answerSdp)
+        );
+
         addConnection(createPeerConnection.current, idUser);
-      } else if (type === "candidate") {
+      } else if (type === "candidate" && createPeerConnection.current) {
         const candidate = data; //payload.candidate;
-        const connection = findConnectionByUserId(idUser, type);
-        console.log("Estado FUERA de Conexion para Answer:", connection);
         const iceCandidate = new RTCIceCandidate(candidate);
-        console.log("ICE generado", iceCandidate);
-        if (connection) {
-          connection.peerConnection.addIceCandidate(
-            new RTCIceCandidate(iceCandidate)
-          );
-        }
+        // console.log("ICE generado", iceCandidate);
+        createPeerConnection.current
+          .addIceCandidate(new RTCIceCandidate(iceCandidate))
+          .then(() => {
+            console.log("Candidato ICE agregado correctamente a la conexión");
+          })
+          .catch((error) => {
+            console.error("Error al agregar el candidato ICE:", error);
+          });
       }
     });
 
@@ -172,6 +172,7 @@ const Page: React.FC = () => {
     peerConnection: RTCPeerConnection,
     idConexion: string
   ) => {
+    console.log("ID comienzo guardado:", idConexion);
     setConnections((prevConnections) => [
       ...prevConnections,
       {
@@ -180,15 +181,16 @@ const Page: React.FC = () => {
         peerConnection,
       },
     ]);
+    console.log("ID termino guardado:", idConexion);
   };
 
   const findConnectionByUserId = (userId: string | undefined, type: string) => {
-    // console.log(
-    //   "Busque Conexiones para:",
-    //   type,
-    //   " Estas Encontre",
-    //   connectionsRef.current
-    // );
+    console.log(
+      "Busque Conexiones para:",
+      type,
+      " Estas Encontre",
+      connectionsRef.current
+    );
     return connectionsRef.current.find((conn) => conn.id === userId);
   };
 
@@ -225,8 +227,6 @@ const Page: React.FC = () => {
     return new RTCPeerConnection();
   };
 
-  
-
   if (createPeerConnection.current) {
     createPeerConnection.current.onicecandidate = (event) => {
       if (event.candidate) {
@@ -242,13 +242,14 @@ const Page: React.FC = () => {
     };
 
     createPeerConnection.current.ontrack = (event) => {
-      console.log("Cambie el estado de los Streams");
+      console.log("Cambie el estado de los Streams ");
+      console.log("Streams:", event.streams);
       setRemoteStreams((prevStreams) => [...prevStreams, ...event.streams]);
     };
   }
 
   return (
-    <div>
+    <div className="text-white">
       <h1>Next.js Webcam Example</h1>
       <div>
         {localStream != undefined && (
