@@ -132,6 +132,11 @@ class VideoCallConsumerTesting(AsyncWebsocketConsumer):
 
         await self.accept()
 
+        await self.send(text_data=json.dumps({
+            'type': 'connected',
+            'idUser': self.channel_name
+        }))
+
     async def disconnect(self, close_code):
         # Salir del grupo de la sala
         await self.channel_layer.group_discard(

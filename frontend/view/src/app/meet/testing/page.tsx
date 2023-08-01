@@ -89,7 +89,7 @@ const Page: React.FC = () => {
       const idUser = data["idUser"];
       delete data["idUser"];
 
-      // console.log("Recibido del Servidor:", data);
+      console.log("Recibido del Servidor:", data);
 
       if (type === "offer" && createPeerConnection.current) {
         const offerSdp = data; //payload.sdp;
