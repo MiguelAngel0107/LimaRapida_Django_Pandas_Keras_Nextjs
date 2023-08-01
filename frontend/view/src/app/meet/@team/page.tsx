@@ -119,18 +119,18 @@ export default function Page() {
         peerConnection.addTrack(track, stream);
       });
 
-      //   // Verificar si el MediaStream se agregó correctamente
-      //   const senders = peerConnection.getSenders();
-      //   const isStreamAdded = senders.some(
-      //     (sender) =>
-      //       sender.track && sender.track.kind === stream.getTracks()[0].kind
-      //   );
+      // Verificar si el MediaStream se agregó correctamente
+      const senders = peerConnection.getSenders();
+      const isStreamAdded = senders.some(
+        (sender) =>
+          sender.track && sender.track.kind === stream.getTracks()[0].kind
+      );
 
-      //   if (isStreamAdded) {
-      //     console.log("Agregué correctamente el MediaStream a WebRTC", stream);
-      //   } else {
-      //     console.log("Error al agregar el MediaStream a WebRTC");
-      //   }
+      if (isStreamAdded) {
+        console.log("Agregué correctamente el MediaStream a WebRTC", stream);
+      } else {
+        console.log("Error al agregar el MediaStream a WebRTC");
+      }
     }
   };
 

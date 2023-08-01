@@ -30,10 +30,11 @@ export default function Page() {
   const [globalStream, setGlobalStream] = useState<MediaStream | undefined>(
     undefined
   );
+  const [state, setState] = useState(false);
 
   useEffect(() => {
     console.log("Streams Globales:", globalStream);
-  }, [globalStream]);
+  }, [globalStream, state]);
 
   useEffect(() => {
     socket.current = new WebSocket(
@@ -74,6 +75,8 @@ export default function Page() {
 
         const newConnection = new RTCPeerConnection();
 
+        onTrackAlone(newConnection);
+
         addTracksToLocalConnection(newConnection, globalRef.current);
         newConnection.setRemoteDescription(new RTCSessionDescription(offerSdp));
 
@@ -94,29 +97,8 @@ export default function Page() {
                 sdpMLineIndex: event.candidate.sdpMLineIndex,
               })
             );
+            console.log("Me envie desde el evento onicecandidate");
           }
-        };
-
-        newConnection.ontrack = (event) => {
-          console.log("Cambie el estado de los Streams ");
-          console.log("Streams:", event.streams);
-
-          const receivedStreams = event.streams;
-
-          receivedStreams.forEach((receivedStream) => {
-
-            // Obtener las pistas individuales de audio y video
-            const audioTracks = receivedStream.getAudioTracks();
-            const videoTracks = receivedStream.getVideoTracks();
-
-            audioTracks.forEach((audioTrack) => {
-              globalStream?.addTrack(audioTrack);
-            });
-
-            videoTracks.forEach((videoTrack) => {
-              globalStream?.addTrack(videoTrack);
-            });
-          });
         };
 
         PeerConnectionRefs.current.push({
@@ -129,7 +111,6 @@ export default function Page() {
         const candidate = data; //payload.candidate;
 
         const ConexionRef = findConnectionByUserId(idUser);
-        //console.log("Conexion Encontrada:", ConexionRef);
 
         const iceCandidate = new RTCIceCandidate(candidate);
 
@@ -159,28 +140,48 @@ export default function Page() {
     };
   }, []);
 
+  function onTrackAlone(RTC: RTCPeerConnection) {
+    console.log("Ejecute la funcion ontrack");
+
+    RTC.ontrack = (event) => {
+      console.log("Cambie el estado de los Streams ");
+      console.log("Streams:", event.streams);
+
+      const receivedStreams = event.streams;
+
+      const updatedStream = globalRef.current
+        ? globalRef.current.clone()
+        : new MediaStream();
+
+      receivedStreams.forEach((receivedStream) => {
+        // Obtener las pistas individuales de audio y video
+        const audioTracks = receivedStream.getAudioTracks();
+        const videoTracks = receivedStream.getVideoTracks();
+
+        audioTracks.forEach((audioTrack) => {
+          updatedStream.addTrack(audioTrack);
+        });
+        videoTracks.forEach((videoTrack) => {
+          updatedStream.addTrack(videoTrack);
+        });
+      });
+
+      globalRef.current = updatedStream;
+
+      console.log("Video salido de ontrack", updatedStream);
+
+      setGlobalStream(globalRef.current);
+    };
+  }
+
   const addTracksToLocalConnection = (
     peerConnection: RTCPeerConnection,
     stream: MediaStream | undefined
   ) => {
-    console.log("Agregar", stream);
     if (stream) {
       stream.getTracks().forEach((track) => {
         peerConnection.addTrack(track, stream);
       });
-
-      // // Verificar si el MediaStream se agregó correctamente
-      // const senders = peerConnection.getSenders();
-      // const isStreamAdded = senders.some(
-      //   (sender) =>
-      //     sender.track && sender.track.kind === stream.getTracks()[0].kind
-      // );
-
-      // if (isStreamAdded) {
-      //   console.log("Agregué correctamente el MediaStream a WebRTC", stream);
-      // } else {
-      //   console.log("Error al agregar el MediaStream a WebRTC");
-      // }
     }
   };
 
