@@ -119,7 +119,7 @@ export default function Page() {
             new RTCIceCandidate(iceCandidate)
           )
             .then(() => {
-              console.log("Candidato ICE agregado correctamente a la conexión");
+              //console.log("Candidato ICE agregado correctamente a la conexión");
             })
             .catch((error) => {
               console.error("Error al agregar el candidato ICE:", error);
@@ -141,8 +141,6 @@ export default function Page() {
   }, []);
 
   function onTrackAlone(RTC: RTCPeerConnection) {
-    console.log("Ejecute la funcion ontrack");
-
     RTC.ontrack = (event) => {
       console.log("Cambie el estado de los Streams ");
       console.log("Streams:", event.streams);
@@ -169,6 +167,8 @@ export default function Page() {
       globalRef.current = updatedStream;
 
       console.log("Video salido de ontrack", updatedStream);
+      const tracks = updatedStream.getTracks();
+      console.log("Número de tracks en el MediaStream:", tracks.length);
 
       setGlobalStream(globalRef.current);
     };
@@ -180,8 +180,24 @@ export default function Page() {
   ) => {
     if (stream) {
       stream.getTracks().forEach((track) => {
+        console.log("Tracks Enviados:", track);
         peerConnection.addTrack(track, stream);
       });
+
+      // Verificar si el MediaStream se agregó correctamente
+      // const senders = peerConnection.getSenders();
+      // const isStreamAdded = senders.some(
+      //   (sender) =>
+      //     sender.track && sender.track.kind === stream.getTracks()[0].kind
+      // );
+
+      // if (isStreamAdded) {
+      //   console.log("Agregué correctamente el MediaStream a WebRTC", stream);
+      //   const tracks = stream.getTracks();
+      //   console.log("Número de tracks en el MediaStream:", tracks.length);
+      // } else {
+      //   console.log("Error al agregar el MediaStream a WebRTC");
+      // }
     }
   };
 
@@ -238,7 +254,7 @@ export default function Page() {
               return (
                 <div
                   key={index}
-                  className={`w-full col-span-4 h-[80vh] bg-gray-950 rounded-2xl flex justify-center items-center border border-purple-950/30`}
+                  className={`w-full col-span-1 h-[80vh] bg-gray-950 rounded-2xl flex justify-center items-center border border-purple-950/30`}
                 >
                   <video
                     ref={(ref) => {

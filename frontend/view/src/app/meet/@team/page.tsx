@@ -29,6 +29,7 @@ export default function Page() {
   const [globalStream, setGlobalStream] = useState<MediaStream | undefined>(
     undefined
   );
+  const CountICE = useRef<number>(0);
 
   useEffect(() => {
     navigator.mediaDevices
@@ -60,18 +61,28 @@ export default function Page() {
 
       // console.log("Recibido del Servidor:", data);
 
-      if (type === "answer" && PeerConnection.current) {
+      if (
+        type === "answer" &&
+        PeerConnection.current &&
+        CountICE.current <= 3
+      ) {
         const answerSdp = data; //payload.sdp;
         PeerConnection.current.setRemoteDescription(
           new RTCSessionDescription(answerSdp)
         );
-      } else if (type === "candidate" && PeerConnection.current) {
+      } else if (
+        type === "candidate" &&
+        PeerConnection.current &&
+        CountICE.current <= 3
+      ) {
         const candidate = data; //payload.candidate;
         const iceCandidate = new RTCIceCandidate(candidate);
         PeerConnection.current
           .addIceCandidate(new RTCIceCandidate(iceCandidate))
           .then(() => {
-            console.log("Candidato ICE agregado correctamente a la conexión");
+            CountICE.current = CountICE.current + 1;
+            // console.log(CountICE.current);
+            // console.log("Candidato ICE agregado correctamente a la conexión");
           })
           .catch((error) => {
             console.error("Error al agregar el candidato ICE:", error);
@@ -100,7 +111,6 @@ export default function Page() {
       `${APP_URL_WS_BACK}/ws/video-test/${ticketCode}/`
     );
     setTimeout(() => handleStartCall(), 2000);
-    //handleStartCall();
     setIsOpen(false);
   }
 
@@ -120,17 +130,17 @@ export default function Page() {
       });
 
       // Verificar si el MediaStream se agregó correctamente
-      const senders = peerConnection.getSenders();
-      const isStreamAdded = senders.some(
-        (sender) =>
-          sender.track && sender.track.kind === stream.getTracks()[0].kind
-      );
+      // const senders = peerConnection.getSenders();
+      // const isStreamAdded = senders.some(
+      //   (sender) =>
+      //     sender.track && sender.track.kind === stream.getTracks()[0].kind
+      // );
 
-      if (isStreamAdded) {
-        console.log("Agregué correctamente el MediaStream a WebRTC", stream);
-      } else {
-        console.log("Error al agregar el MediaStream a WebRTC");
-      }
+      // if (isStreamAdded) {
+      //   // console.log("Agregué correctamente el MediaStream a WebRTC", stream);
+      // } else {
+      //   console.log("Error al agregar el MediaStream a WebRTC");
+      // }
     }
   };
 
@@ -171,26 +181,32 @@ export default function Page() {
     };
 
     PeerConnection.current.ontrack = (event) => {
-      console.log("Cambie el estado de los Streams ");
-      console.log("Streams:", event.streams);
+      // console.log("Cambie el estado de los Streams ");
+      // console.log("Streams:", event.streams);
 
       const receivedStreams = event.streams;
 
       // Clonar el globalStream para tener una copia modificable
+      console.log("Stream Antiguo:", globalStream);
+
       const updatedStream = globalStream
         ? globalStream.clone()
         : new MediaStream();
 
       receivedStreams.forEach((receivedStream) => {
+        console.log("Media Recibidos", receivedStream);
+
         // Obtener las pistas individuales de audio y video
         const audioTracks = receivedStream.getAudioTracks();
         const videoTracks = receivedStream.getVideoTracks();
 
         audioTracks.forEach((audioTrack) => {
+          console.log('Tracks Recibidos Audio:', audioTrack)
           updatedStream.addTrack(audioTrack);
         });
 
         videoTracks.forEach((videoTrack) => {
+          console.log('Tracks Recibidos Audio:', videoTrack)
           updatedStream.addTrack(videoTrack);
         });
       });
@@ -282,7 +298,7 @@ export default function Page() {
                 return (
                   <div
                     key={index}
-                    className={`w-full col-span-4 h-[80vh] bg-gray-950 rounded-2xl flex justify-center items-center border border-purple-950/30`}
+                    className={`w-full col-span-1 h-[80vh] bg-gray-950 rounded-2xl flex justify-center items-center border border-purple-950/30`}
                   >
                     <video
                       ref={(ref) => {
