@@ -19,14 +19,7 @@ const Page: React.FC = () => {
   const remoteVideoRef = useRef<HTMLVideoElement | null>(null);
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const [capturedImage, setCapturedImage] = useState<string | undefined>(
-    undefined
-  );
-
   const canvasRefLocal = useRef<HTMLCanvasElement | null>(null);
-  const [capturedImageLocal, setCapturedImageLocal] = useState<
-    string | undefined
-  >(undefined);
 
   const [count, setCount] = useState<number>(0);
 
@@ -44,9 +37,9 @@ const Page: React.FC = () => {
       });
 
     return () => {
-      if (peerRef.current) {
-        peerRef.current.destroy();
-      }
+      //if (peerRef.current) {
+      //  peerRef.current.destroy();
+      //}
     };
   }, []);
 
@@ -84,7 +77,6 @@ const Page: React.FC = () => {
             setRemoteStream(stream);
           });
         }
-
         if (peerRef.current) {
           peerRef.current.signal(message);
         }
@@ -105,9 +97,9 @@ const Page: React.FC = () => {
 
     return () => {
       socket.close();
-      if (peerRef.current) {
-        peerRef.current.destroy();
-      }
+      //if (peerRef.current) {
+      //  peerRef.current.destroy();
+      //}
     };
   }, [localStream]);
 
@@ -119,6 +111,7 @@ const Page: React.FC = () => {
 
   useEffect(() => {
     if (remoteVideoRef.current && remoteStream) {
+      console.log(remoteStream)
       remoteVideoRef.current.srcObject = remoteStream;
     }
   }, [remoteStream]);
@@ -127,8 +120,7 @@ const Page: React.FC = () => {
     const intervalId = setInterval(async () => {
       setCount((state) => state + 1);
       if (localStream && count <= 4) {
-
-        await captureImageLocal();
+        //await captureImageLocal();
       }
     }, 1000);
     return () => clearInterval(intervalId);
@@ -146,7 +138,7 @@ const Page: React.FC = () => {
       const imageUrl = canvas.toDataURL("image/png");
       // Aquí puedes enviar la imagen al servidor Django para su procesamiento con IA
       console.log("Imagen capturada:", imageUrl);
-      setCapturedImage(imageUrl);
+      // setCapturedImage(imageUrl);
     }
   };
 
@@ -163,7 +155,7 @@ const Page: React.FC = () => {
       const imageUrl = canvas.toDataURL("image/png");
       // Aquí puedes enviar la imagen al servidor Django para su procesamiento con IA
       // console.log("Imagen capturada:", imageUrl);
-      setCapturedImageLocal(imageUrl);
+      // setCapturedImageLocal(imageUrl);
 
       // Crear un objeto FormData para enviar la imagen como multipart/form-data
       const formData = new FormData();
@@ -190,50 +182,16 @@ const Page: React.FC = () => {
   return (
     <div>
       <h1>Next.js Webcam Example</h1>
-      {/*<Camera />*/}
       <div>
-        {/*localStream && <video ref={localVideoRef} autoPlay muted />*/}
-        {/*remoteStream && <video ref={remoteVideoRef} autoPlay muted />*/}
-
         {localStream && (
           <div className="flex">
             <video ref={localVideoRef} autoPlay muted />
             <canvas ref={canvasRefLocal} style={{ display: "none" }} />
-
-            {/*<div>
-              <button
-                onClick={captureImageLocal}
-                className="text-gray-900 hover:text-white border border-gray-800 hover:bg-gray-900 focus:ring-4 focus:outline-none focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center mr-2 mb-2 dark:border-gray-600 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-600 dark:focus:ring-gray-800"
-              >
-                Capturar imagen Local
-              </button>
-            </div>
-            {localStream && (
-              <>
-                <h2>Previsualización de la imagen capturada:</h2>
-                <canvas ref={canvasRefLocal} />
-                
-              </>
-            )}*/}
           </div>
         )}
         {remoteStream && (
           <div className="flex">
             <video ref={remoteVideoRef} autoPlay muted />
-            {/*<div>
-              <button
-                onClick={captureImage}
-                className="text-gray-900 hover:text-white border border-gray-800 hover:bg-gray-900 focus:ring-4 focus:outline-none focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center mr-2 mb-2 dark:border-gray-600 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-600 dark:focus:ring-gray-800"
-              >
-                Capturar imagen Remota
-              </button>
-            </div>
-            {remoteStream && (
-              <>
-                <h2>Previsualización de la imagen capturada:</h2>
-                <canvas ref={canvasRef} />
-              </>
-            )}*/}
           </div>
         )}
       </div>
