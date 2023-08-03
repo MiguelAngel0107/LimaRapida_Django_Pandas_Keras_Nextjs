@@ -29,6 +29,9 @@ export default function Page() {
   const [globalStream, setGlobalStream] = useState<MediaStream | undefined>(
     undefined
   );
+  const globalArrayMedia = useRef<MediaStream[]>([]);
+  const [globalArrayState, setGlobalArrayState] = useState<MediaStream[]>([]);
+
   const CountICE = useRef<number>(0);
 
   useEffect(() => {
@@ -37,6 +40,9 @@ export default function Page() {
       .then((stream) => {
         setLocalStream(stream);
         setGlobalStream(stream);
+
+        globalArrayMedia.current.push(stream);
+        setGlobalArrayState(globalArrayMedia.current);
       })
       .catch((error) => {
         console.error("Error al acceder a la cámara y el micrófono:", error);
@@ -166,6 +172,22 @@ export default function Page() {
     }
   };
 
+  function concatArrayMediaStreamNow(
+    ref: React.MutableRefObject<MediaStream[]>,
+    setState: React.Dispatch<React.SetStateAction<MediaStream[]>>
+  ) {
+    const arraySinDuplicados = ref.current.filter(
+      (elemento, indice, arreglo) => {
+        return (
+          arreglo.findIndex((mediaStream) => mediaStream.id === elemento.id) ===
+          indice
+        );
+      }
+    );
+    setState(arraySinDuplicados);
+    ref.current = arraySinDuplicados;
+  }
+
   if (PeerConnection.current) {
     PeerConnection.current.onicecandidate = (event) => {
       if (event.candidate) {
@@ -182,44 +204,52 @@ export default function Page() {
 
     PeerConnection.current.ontrack = (event) => {
       console.log("------------------------------------------------");
-      // console.log("Cambie el estado de los Streams ");
-      // console.log("Streams:", event.streams);
-
       const receivedStreams = event.streams;
       console.log("Lista Recibida:", receivedStreams);
 
       // Clonar el globalStream para tener una copia modificable
       // console.log("Stream Antiguo:", globalStream);
 
-      const updatedStream = globalStream
-        ? globalStream.clone()
-        : new MediaStream();
-
       receivedStreams.forEach((receivedStream) => {
-        console.log("MediaStream Recibido", receivedStream);
+        globalArrayMedia.current?.push(receivedStream);
         console.log(
-          "Numero de Tracks recibidos:",
+          "El Media Se LLAMA:",
+          receivedStream.id,
+          "y tiene :",
           receivedStream.getTracks().length
         );
-
-        // Obtener las pistas individuales de audio y video
-        const audioTracks = receivedStream.getAudioTracks();
-        const videoTracks = receivedStream.getVideoTracks();
-
-        audioTracks.forEach((audioTrack) => {
-          //console.log('Tracks Recibidos Audio:', audioTrack)
-          updatedStream.addTrack(audioTrack);
-        });
-
-        videoTracks.forEach((videoTrack) => {
-          //console.log('Tracks Recibidos Audio:', videoTrack)
-          updatedStream.addTrack(videoTrack);
-        });
       });
+      concatArrayMediaStreamNow(globalArrayMedia, setGlobalArrayState);
+
+      // const updatedStream = globalStream
+      //   ? globalStream.clone()
+      //   : new MediaStream();
+
+      // receivedStreams.forEach((receivedStream) => {
+      //   console.log("MediaStream Recibido", receivedStream);
+      //   console.log(
+      //     "Numero de Tracks recibidos:",
+      //     receivedStream.getTracks().length
+      //   );
+
+      //   // Obtener las pistas individuales de audio y video
+      //   const audioTracks = receivedStream.getAudioTracks();
+      //   const videoTracks = receivedStream.getVideoTracks();
+
+      //   audioTracks.forEach((audioTrack) => {
+      //     //console.log('Tracks Recibidos Audio:', audioTrack)
+      //     updatedStream.addTrack(audioTrack);
+      //   });
+
+      //   videoTracks.forEach((videoTrack) => {
+      //     //console.log('Tracks Recibidos Audio:', videoTrack)
+      //     updatedStream.addTrack(videoTrack);
+      //   });
+      // });
 
       console.log("------------------------------------------------");
 
-      setGlobalStream(updatedStream);
+      // setGlobalStream(updatedStream);
     };
   }
 
@@ -300,9 +330,9 @@ export default function Page() {
 
             {/* Participantes */}
             <div className="grid grid-cols-4 justify-items-center my-4 gap-x-0 gap-y-6">
-              {globalStream?.getVideoTracks().map((person, index) => {
-                const mediaStream = new MediaStream();
-                mediaStream.addTrack(person);
+              {globalArrayState.map((person, index) => {
+                // const mediaStream = new MediaStream();
+                // mediaStream.addTrack(person);
                 return (
                   <div
                     key={index}
@@ -311,7 +341,7 @@ export default function Page() {
                     <video
                       ref={(ref) => {
                         if (ref) {
-                          ref.srcObject = mediaStream;
+                          ref.srcObject = person;
                         }
                       }}
                       className="rounded-2xl"

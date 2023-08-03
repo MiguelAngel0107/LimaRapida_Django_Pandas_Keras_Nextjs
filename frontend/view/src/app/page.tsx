@@ -83,7 +83,7 @@ const HomePage = () => {
             <p className="lg:w-2/3 mx-auto leading-relaxed text-base">
               Whatever cardigan tote bag tumblr hexagon brooklyn asymmetrical
               gentrify, subway tile poke farm-to-table. Franzen you probably
-              haven't heard of them.
+              havent heard of them.
             </p>
           </div>
           <div className="container mx-auto mt-8 grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
@@ -248,7 +248,7 @@ const HomePage = () => {
             <p className="lg:w-2/3 mx-auto leading-relaxed text-base">
               Whatever cardigan tote bag tumblr hexagon brooklyn asymmetrical
               gentrify, subway tile poke farm-to-table. Franzen you probably
-              haven't heard of them.
+              havent heard of them.
             </p>
           </div>
           <div className="flex flex-wrap -m-2">
