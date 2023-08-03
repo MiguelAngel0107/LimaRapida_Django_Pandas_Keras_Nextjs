@@ -23,7 +23,7 @@ function ListContacts() {
     },
   ];
   return (
-    <div className="flex-1 p-4 bg-gray-950 text-white">
+    <div className="flex-1 p-4 bg-transparent text-white">
       <h2 className="text-lg font-medium mb-4">Contactos</h2>
       <ul className="space-y-4">
         {contacts.map((contact) => (
@@ -31,8 +31,8 @@ function ListContacts() {
             key={contact.id}
             className={`flex items-center space-x-4 px-2 py-2 rounded-lg cursor-pointer ${
               contact.active
-                ? "bg-indigo-600 text-white"
-                : "hover:bg-indigo-600 hover:text-white"
+                ? "bg-violet-600 text-white"
+                : "hover:bg-violet-600 hover:text-white"
             }`}
           >
             <Image

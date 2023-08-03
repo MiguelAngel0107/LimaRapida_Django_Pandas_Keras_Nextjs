@@ -13,12 +13,13 @@ export const sendImageToServer = async (
     );
 
     if (response.status === 201) {
-      // console.log("Imagen enviada al servidor correctamente.");
-      setCount((state) => state + 1);
+      console.log("servidor correctamente.");
+    //  setCount((state) => state + 1);
       // Aquí puedes realizar acciones adicionales después de enviar la imagen.
-      //} else {
-      setCount((state) => state + 1);
-      // console.error("Error al enviar la imagen al servidor.");
+    } else {
+    //  setCount((state) => state + 1);
+      console.error("Error servidor.");
+
     }
   } catch (error) {
     // console.error("Error en la solicitud:", error);

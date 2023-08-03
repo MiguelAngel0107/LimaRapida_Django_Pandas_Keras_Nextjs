@@ -11,7 +11,7 @@ interface Props {
 
 function ChatInput(props: Props): ReactElement {
   return (
-    <div className="bg-gray-900 flex items-center bottom-0">
+    <div className="flex items-center rounded-b-3xl px-3 pb-3">
       <form className="flex w-full" onSubmit={props.handleFormSubmit}>
         {/*<button
           type="button"
@@ -32,11 +32,11 @@ function ChatInput(props: Props): ReactElement {
           type="text"
           value={props.text}
           onChange={props.handleInputChange}
-          className="text-gray-900 flex-1 rounded-full border-2 border-indigo-600 px-4 py-2 focus:outline-none focus:border-indigo-500"
+          className="text-gray-900 flex-1 rounded-full border-2 border-violet-600 px-4 py-2 focus:outline-none focus:border-violet-500"
         />
         <button
           type="submit"
-          className="ml-2 bg-indigo-600 text-white rounded-full px-4 py-2 focus:outline-none hover:bg-indigo-500"
+          className="ml-2 bg-violet-600 text-white rounded-full px-4 py-2 focus:outline-none hover:bg-violet-500"
           disabled={!props.text.trim()}
         >
           Enviar

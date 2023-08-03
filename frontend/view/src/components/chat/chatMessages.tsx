@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import ChatInput from "./chatInput";
 import { APP_URL_WS_BACK } from "@/globals";
+import { useAppSelector } from "@/redux/hooks";
 
 interface listMessageProps {
   username: string;
@@ -8,13 +9,18 @@ interface listMessageProps {
 }
 
 function ChatMessages() {
+  const dataUser = useAppSelector((state) => state.Auth.user);
+
   const [chatSocket, setChatSocket] = useState<WebSocket | null>(null);
   const [listMessage, setListMessage] = useState<listMessageProps[]>([]);
 
   const [text, setText] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
-  const messagesContainerRef = useRef<HTMLUListElement>(null);
+  const containerRef = useRef<HTMLUListElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [lastPositionX, setLastPositionX] = useState(0);
+  const [lastPositionY, setLastPositionY] = useState(0);
 
   useEffect(() => {
     const socket = new WebSocket(`${APP_URL_WS_BACK}/ws/holamundo/`);
@@ -26,8 +32,7 @@ function ChatMessages() {
     socket.addEventListener("message", (event) => {
       const newData = JSON.parse(event.data);
       setListMessage((prevState) => [...prevState, newData]);
-      
-      console.log("Recibi ese Mensaje",newData);
+      console.log("Recibi ese Mensaje", newData);
     });
 
     socket.addEventListener("close", () => {
@@ -43,19 +48,10 @@ function ChatMessages() {
 
   useEffect(() => {
     // Scroll to bottom when new messages are added
-    if (messagesContainerRef.current) {
-      messagesContainerRef.current.scrollTop =
-        messagesContainerRef.current.scrollHeight;
+    if (containerRef.current) {
+      containerRef.current.scrollTop = containerRef.current.scrollHeight;
     }
   }, [listMessage]);
-
-  useEffect(() => {
-    if (messagesContainerRef.current) {
-      messagesContainerRef.current.style.height = `${
-        window.innerHeight - 120
-      }px`;
-    }
-  }, []);
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     //console.log("Paso el InputChange");
@@ -65,6 +61,7 @@ function ChatMessages() {
   const handleEmojiSelect = (emoji: string) => {
     setText(text + emoji);
   };
+
   const toggleEmojiPicker = () => {
     setShowEmojiPicker(!showEmojiPicker);
   };
@@ -75,7 +72,11 @@ function ChatMessages() {
     if (!text.trim()) return;
 
     chatSocket?.send(
-      JSON.stringify({ message: text, username: "Miguel", room: "holamundo" })
+      JSON.stringify({
+        message: text,
+        username: dataUser?.name,
+        room: "holamundo",
+      })
     );
 
     setText("");
@@ -98,14 +99,21 @@ function ChatMessages() {
   //  : (MessagesBackennd = messages);
 
   return (
-    <div className="flex-col w-full p-4 bg-gray-900 text-white pb-20">
-      <h2 className="text-lg font-medium mb-4">Mensajes</h2>
-      <ul
-        ref={messagesContainerRef}
-        className={`h-[86vh] w-full relative overflow-y-auto`}
-      >
-        <>
-          {/*MessagesBackennd.map((message, index) => (
+    <div className="flex-col w-full bg-purple-950/20 text-white rounded-3xl">
+      <div className="flex justify-between text-lg font-medium mb-4 bg-purple-950 rounded-t-3xl p-3">
+        <p>Barra Informacion</p>
+        <button>Retroceder</button>
+      </div>
+
+      <div className="relative w-full h-[62vh] overflow-hidden p-3">
+        <ul
+          className={`h-full w-full relative overflow-y-auto flex flex-col gap-2 ${
+            listMessage.length < 14 ? " justify-end" : ""
+          }`}
+          ref={containerRef}
+        >
+          <>
+            {/*MessagesBackennd.map((message, index) => (
           <li
             key={index}
             className={`flex flex-col ${
@@ -143,37 +151,38 @@ function ChatMessages() {
             <span className="text-xs text-gray-400 mt-1">Undefined</span>
           </li>
             ))*/}
-        </>
+          </>
 
-        {listMessage &&
-          listMessage.map((message, index) => (
-            <li
-              key={index}
-              className={`flex flex-col ${
-                message.username === "Miguel" ? "items-end" : "items-start"
-              }`}
-            >
-              <div
-                className={`inline-block px-4 py-2 rounded-lg ${
-                  message.username === "Miguel"
-                    ? "bg-indigo-600 text-white rounded-br-none"
-                    : "bg-gray-100 text-gray-900 rounded-bl-none"
+          {listMessage &&
+            listMessage.map((message, index) => (
+              <li
+                key={index}
+                className={`flex flex-col ${
+                  message.username === dataUser?.name
+                    ? "items-end"
+                    : "items-start"
                 }`}
               >
-                <p className="text-sm">{message.message}</p>
-              </div>
-              <span className="text-xs text-gray-400 mt-1">Undefined</span>
-            </li>
-          ))}
-      </ul>
-      <div>
-        <ChatInput
-          text={text}
-          handleInputChange={handleInputChange}
-          toggleEmojiPicker={toggleEmojiPicker}
-          handleFormSubmit={handleFormSubmit}
-        />
+                <div
+                  className={`inline-block px-4 py-2 rounded-lg ${
+                    message.username === dataUser?.name
+                      ? "bg-violet-600 text-white rounded-br-none"
+                      : "bg-gray-100 text-gray-900 rounded-bl-none"
+                  }`}
+                >
+                  <p className="text-sm">{message.message}</p>
+                </div>
+                {/*<span className="text-xs text-gray-400 mt-1">{dataUser?.name}</span>*/}
+              </li>
+            ))}
+        </ul>
       </div>
+      <ChatInput
+        text={text}
+        handleInputChange={handleInputChange}
+        toggleEmojiPicker={toggleEmojiPicker}
+        handleFormSubmit={handleFormSubmit}
+      />
     </div>
   );
 }
