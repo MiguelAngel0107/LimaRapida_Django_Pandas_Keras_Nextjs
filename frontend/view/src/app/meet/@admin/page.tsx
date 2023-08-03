@@ -30,11 +30,13 @@ export default function Page() {
   const [globalStream, setGlobalStream] = useState<MediaStream | undefined>(
     undefined
   );
-  const [state, setState] = useState(false);
+
+  const globalArrayMedia = useRef<MediaStream[]>([]);
+  const [globalArrayState, setGlobalArrayState] = useState<MediaStream[]>([]);
 
   useEffect(() => {
-    console.log("Streams Globales:", globalStream);
-  }, [globalStream, state]);
+    console.log("ESTADO DEL ARRAY MEDIA STREAM:", globalArrayState);
+  }, [globalArrayState]);
 
   useEffect(() => {
     socket.current = new WebSocket(
@@ -44,8 +46,9 @@ export default function Page() {
     navigator.mediaDevices
       .getUserMedia({ video: true, audio: true })
       .then((stream) => {
-        globalRef.current = stream;
-        setGlobalStream(stream);
+        globalArrayMedia.current.push(stream);
+        setGlobalArrayState(globalArrayMedia.current);
+        console.log("ESTE es mi MediaStream LOCAL", stream);
       })
       .catch((error) => {
         console.error("Error al acceder a la cámara y el micrófono:", error);
@@ -77,7 +80,7 @@ export default function Page() {
 
         onTrackAlone(newConnection);
 
-        addTracksToLocalConnection(newConnection, globalRef.current);
+        addTracksToLocalConnection(newConnection, globalArrayMedia.current);
         newConnection.setRemoteDescription(new RTCSessionDescription(offerSdp));
 
         const answerSdp = await newConnection.createAnswer();
@@ -147,59 +150,98 @@ export default function Page() {
 
       const receivedStreams = event.streams;
 
-      const updatedStream = globalRef.current
-        ? globalRef.current.clone()
-        : new MediaStream();
-
       receivedStreams.forEach((receivedStream) => {
-        // Obtener las pistas individuales de audio y video
-        const audioTracks = receivedStream.getAudioTracks();
-        const videoTracks = receivedStream.getVideoTracks();
-
-        audioTracks.forEach((audioTrack) => {
-          updatedStream.addTrack(audioTrack);
-        });
-        videoTracks.forEach((videoTrack) => {
-          updatedStream.addTrack(videoTrack);
-        });
+        globalArrayMedia.current?.push(receivedStream);
       });
-
-      globalRef.current = updatedStream;
-
-      console.log("Video salido de ontrack", updatedStream);
-      const tracks = updatedStream.getTracks();
-      console.log("Número de tracks en el MediaStream:", tracks.length);
-
-      setGlobalStream(globalRef.current);
+      concatArrayMediaStreamNow(globalArrayMedia, setGlobalArrayState);
     };
   }
 
   const addTracksToLocalConnection = (
     peerConnection: RTCPeerConnection,
-    stream: MediaStream | undefined
+    streams: MediaStream[]
   ) => {
-    if (stream) {
-      stream.getTracks().forEach((track) => {
-        console.log("Tracks Enviados:", track);
-        peerConnection.addTrack(track, stream);
+    console.log("--------------------------------------------------------");
+    const mergedMediaStream = new MediaStream();
+
+    console.log("Esta es la Lista que voy a iterar:", streams);
+
+    const copiaListaMediaStreams = streams.slice();
+    copiaListaMediaStreams.reverse();
+
+    copiaListaMediaStreams.forEach((mediaStream) => {
+      mediaStream.getTracks().forEach((track) => {
+        mergedMediaStream.addTrack(track);
       });
+      const numTracks = mediaStream.getTracks().length;
+      console.log(
+        `El MediaStream ${mediaStream.id}: tiene ${numTracks} pistas.`
+      );
+    });
 
-      // Verificar si el MediaStream se agregó correctamente
-      // const senders = peerConnection.getSenders();
-      // const isStreamAdded = senders.some(
-      //   (sender) =>
-      //     sender.track && sender.track.kind === stream.getTracks()[0].kind
-      // );
+    if (mergedMediaStream.getTracks().length > 0) {
+      // copiaListaMediaStreams.forEach((mediaStream) => {
+      //   mediaStream.getTracks().forEach((track) => {
+      //     peerConnection.addTrack(track, mediaStream);
+      //   });
+      // });
 
-      // if (isStreamAdded) {
-      //   console.log("Agregué correctamente el MediaStream a WebRTC", stream);
-      //   const tracks = stream.getTracks();
-      //   console.log("Número de tracks en el MediaStream:", tracks.length);
-      // } else {
-      //   console.log("Error al agregar el MediaStream a WebRTC");
-      // }
+      if (copiaListaMediaStreams.length > 1) {
+        console.log("EJECUTE EL IF");
+        console.log(copiaListaMediaStreams);
+        mergedMediaStream.getTracks().forEach((track) => {
+          peerConnection.addTrack(
+            track,
+            copiaListaMediaStreams[0],
+            copiaListaMediaStreams[1]
+          );
+        });
+      } else {
+        mergedMediaStream.getTracks().forEach((track) => {
+          peerConnection.addTrack(track, mergedMediaStream);
+        });
+      }
+
+      //// Verificar si el MediaStream se agregó correctamente
+      const senders = peerConnection.getSenders();
+      const trackToCheck = mergedMediaStream.getTracks();
+
+      console.log("Estos son los tracks all", trackToCheck);
+
+      senders.some((sender) => {
+        console.log("sender", sender);
+        sender.track &&
+          sender.track.kind === mergedMediaStream.getTracks()[0].kind;
+      });
     }
+    console.log("--------------------------------------------------------");
   };
+
+  function concatArrayMediaStreamNow(
+    ref: React.MutableRefObject<MediaStream[]>,
+    setState: React.Dispatch<React.SetStateAction<MediaStream[]>>
+  ) {
+    // console.log(
+    //   "Estado de Array MediaStream despues del onTrack y ANTES de la limpieza:",
+    //   ref.current
+    // );
+
+    const arraySinDuplicados = ref.current.filter(
+      (elemento, indice, arreglo) => {
+        return (
+          arreglo.findIndex((mediaStream) => mediaStream.id === elemento.id) ===
+          indice
+        );
+      }
+    );
+    setState(arraySinDuplicados);
+    ref.current = arraySinDuplicados;
+
+    // console.log(
+    //   "Estado de Array MediaStream despues del onTrack y DESPUES de la limpieza:",
+    //   ref.current
+    // );
+  }
 
   const controlDescriptionLocal = async (
     peerConnection: RTCPeerConnection,
@@ -248,9 +290,9 @@ export default function Page() {
 
           {/* Participantes */}
           <div className="grid grid-cols-4 justify-items-center my-4 gap-x-0 gap-y-6">
-            {globalStream?.getVideoTracks().map((person, index) => {
-              const mediaStream = new MediaStream();
-              mediaStream.addTrack(person);
+            {globalArrayState.map((person, index) => {
+              // const mediaStream = new MediaStream();
+              // mediaStream.addTrack(person);
               return (
                 <div
                   key={index}
@@ -259,7 +301,7 @@ export default function Page() {
                   <video
                     ref={(ref) => {
                       if (ref) {
-                        ref.srcObject = mediaStream;
+                        ref.srcObject = person;
                       }
                     }}
                     className="rounded-2xl"

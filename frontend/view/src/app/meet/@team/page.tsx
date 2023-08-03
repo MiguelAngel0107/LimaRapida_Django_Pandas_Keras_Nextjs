@@ -181,35 +181,43 @@ export default function Page() {
     };
 
     PeerConnection.current.ontrack = (event) => {
+      console.log("------------------------------------------------");
       // console.log("Cambie el estado de los Streams ");
       // console.log("Streams:", event.streams);
 
       const receivedStreams = event.streams;
+      console.log("Lista Recibida:", receivedStreams);
 
       // Clonar el globalStream para tener una copia modificable
-      console.log("Stream Antiguo:", globalStream);
+      // console.log("Stream Antiguo:", globalStream);
 
       const updatedStream = globalStream
         ? globalStream.clone()
         : new MediaStream();
 
       receivedStreams.forEach((receivedStream) => {
-        console.log("Media Recibidos", receivedStream);
+        console.log("MediaStream Recibido", receivedStream);
+        console.log(
+          "Numero de Tracks recibidos:",
+          receivedStream.getTracks().length
+        );
 
         // Obtener las pistas individuales de audio y video
         const audioTracks = receivedStream.getAudioTracks();
         const videoTracks = receivedStream.getVideoTracks();
 
         audioTracks.forEach((audioTrack) => {
-          console.log('Tracks Recibidos Audio:', audioTrack)
+          //console.log('Tracks Recibidos Audio:', audioTrack)
           updatedStream.addTrack(audioTrack);
         });
 
         videoTracks.forEach((videoTrack) => {
-          console.log('Tracks Recibidos Audio:', videoTrack)
+          //console.log('Tracks Recibidos Audio:', videoTrack)
           updatedStream.addTrack(videoTrack);
         });
       });
+
+      console.log("------------------------------------------------");
 
       setGlobalStream(updatedStream);
     };
