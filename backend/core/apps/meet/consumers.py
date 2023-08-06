@@ -160,6 +160,7 @@ class VideoCallConsumerTesting(AsyncWebsocketConsumer):
         # print(data)
         print("--------------------------")
         print(signal_type)
+        print(sdp)
         print(msg_client)
 
         if signal_type == 'send_offer':
@@ -190,6 +191,24 @@ class VideoCallConsumerTesting(AsyncWebsocketConsumer):
                     'candidate': candidate,
                     'sdpMid': sdpMid,
                     'sdpMLineIndex': sdpMLineIndex,
+                    'sender_channel_name': self.channel_name
+                }
+            )
+        elif signal_type == 'renegotiation_offer':
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    'type': 'forward_renegotiation_offer',
+                    'sdp': sdp,
+                    'sender_channel_name': self.channel_name
+                }
+            )
+        elif signal_type == 'renegotiation_answer':
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    'type': 'forward_renegotiation_answer',
+                    'sdp': sdp,
                     'sender_channel_name': self.channel_name
                 }
             )
@@ -231,5 +250,29 @@ class VideoCallConsumerTesting(AsyncWebsocketConsumer):
                 'candidate': candidate,  # ["candidate"],
                 'sdpMid': sdpMid,
                 'sdpMLineIndex': sdpMLineIndex,
+                'idUser': sender_channel_name
+            }))
+
+    async def forward_renegotiation_offer(self, event):
+        # Enviar la oferta recibida a todos los miembros del grupo de la sala (excepto al remitente original)
+        sdp = event['sdp']
+        sender_channel_name = event['sender_channel_name']
+
+        if self.channel_name != sender_channel_name:
+            await self.send(text_data=json.dumps({
+                'type': 're_offer',
+                'sdp': sdp,
+                'idUser': sender_channel_name
+            }))
+    
+    async def forward_renegotiation_answer(self, event):
+        # Enviar la respuesta recibida a todos los miembros del grupo de la sala (excepto al remitente original)
+        sdp = event['sdp']
+        sender_channel_name = event['sender_channel_name']
+
+        if self.channel_name != sender_channel_name:
+            await self.send(text_data=json.dumps({
+                'type': 're_answer',
+                'sdp': sdp,
                 'idUser': sender_channel_name
             }))

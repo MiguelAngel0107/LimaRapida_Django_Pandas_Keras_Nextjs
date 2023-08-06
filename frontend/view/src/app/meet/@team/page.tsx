@@ -95,6 +95,19 @@ export default function Page() {
           });
       } else if (type === "connected") {
         idUserWebSocket.current = idUser;
+      } else if (type === "re_offer" && PeerConnection.current) {
+        const offerSdp = data["sdp"]; //payload.sdp;
+
+        PeerConnection.current.setRemoteDescription(
+          new RTCSessionDescription(offerSdp)
+        );
+
+        const answerSdp = await PeerConnection.current.createAnswer();
+        await PeerConnection.current.setLocalDescription(answerSdp);
+
+        socket.current?.send(
+          JSON.stringify({ type: "renegotiation_answer", sdp: answerSdp })
+        );
       }
     });
 
@@ -129,24 +142,13 @@ export default function Page() {
     peerConnection: RTCPeerConnection,
     stream: MediaStream | undefined
   ) => {
-    // console.log("Agregar", stream);
     if (stream) {
       stream.getTracks().forEach((track) => {
-        peerConnection.addTrack(track, stream);
+        peerConnection.addTransceiver(track, {
+          streams: [stream],
+        });
       });
-
-      // Verificar si el MediaStream se agregó correctamente
-      // const senders = peerConnection.getSenders();
-      // const isStreamAdded = senders.some(
-      //   (sender) =>
-      //     sender.track && sender.track.kind === stream.getTracks()[0].kind
-      // );
-
-      // if (isStreamAdded) {
-      //   // console.log("Agregué correctamente el MediaStream a WebRTC", stream);
-      // } else {
-      //   console.log("Error al agregar el MediaStream a WebRTC");
-      // }
+      peerConnection.addTransceiver("video");
     }
   };
 
@@ -205,6 +207,10 @@ export default function Page() {
     PeerConnection.current.ontrack = (event) => {
       console.log("------------------------------------------------");
       const receivedStreams = event.streams;
+      const receivedTransceptor = event.transceiver.receiver.track;
+
+      console.log("Trannceptor supuestamente recibido:", receivedTransceptor);
+
       console.log("Lista Recibida:", receivedStreams);
 
       // Clonar el globalStream para tener una copia modificable
@@ -250,6 +256,10 @@ export default function Page() {
       console.log("------------------------------------------------");
 
       // setGlobalStream(updatedStream);
+    };
+
+    PeerConnection.current.onnegotiationneeded = (event) => {
+      console.log("ON NEgociation", event);
     };
   }
 
@@ -386,6 +396,16 @@ export default function Page() {
                 className="flex p-2 h-12 w-12 justify-center items-center bg-gray-950 rounded-full hover:bg-purple-950"
               >
                 <FontAwesomeIcon icon={faMessage} />
+              </div>
+
+              <div
+                onClick={() => {
+                  const transceivers = PeerConnection.current.getTransceivers();
+                  console.log("TRANSCEPTORES:", transceivers);
+                }}
+                className="flex p-2 h-12 w-12 justify-center items-center bg-gray-950 rounded-full hover:bg-purple-950"
+              >
+                GET
               </div>
             </div>
           </div>

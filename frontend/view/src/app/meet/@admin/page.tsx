@@ -34,9 +34,7 @@ export default function Page() {
   const globalArrayMedia = useRef<MediaStream[]>([]);
   const [globalArrayState, setGlobalArrayState] = useState<MediaStream[]>([]);
 
-  useEffect(() => {
-    console.log("ESTADO DEL ARRAY MEDIA STREAM:", globalArrayState);
-  }, [globalArrayState]);
+  const localStream = useRef<MediaStream>();
 
   useEffect(() => {
     socket.current = new WebSocket(
@@ -46,9 +44,10 @@ export default function Page() {
     navigator.mediaDevices
       .getUserMedia({ video: true, audio: true })
       .then((stream) => {
+        localStream.current = stream;
         globalArrayMedia.current.push(stream);
         setGlobalArrayState(globalArrayMedia.current);
-        console.log("ESTE es mi MediaStream LOCAL", stream);
+        // console.log("ESTE es mi MediaStream LOCAL", stream);
       })
       .catch((error) => {
         console.error("Error al acceder a la cámara y el micrófono:", error);
@@ -73,15 +72,16 @@ export default function Page() {
 
       // console.log("Recibido del Servidor:", data);
 
-      if (type === "offer") {
+      if (type === "offer" && localStream.current) {
         const offerSdp = data; //payload.sdp;
-
         const newConnection = new RTCPeerConnection();
 
-        onTrackAlone(newConnection);
-
-        addTracksToLocalConnection(newConnection, globalArrayMedia.current);
         newConnection.setRemoteDescription(new RTCSessionDescription(offerSdp));
+        addTracksToLocalConnection(newConnection, localStream.current);
+
+        //newConnection.addTransceiver("video");
+
+        onTrackAlone(newConnection);
 
         const answerSdp = await newConnection.createAnswer();
         await controlDescriptionLocal(newConnection, answerSdp);
@@ -108,8 +108,6 @@ export default function Page() {
           id: idUser,
           RTCconexion: newConnection,
         });
-
-        //console.log(PeerConnectionRefs);
       } else if (type === "candidate") {
         const candidate = data; //payload.candidate;
 
@@ -130,6 +128,14 @@ export default function Page() {
         }
       } else if (type === "connected") {
         idUserWebSocket.current = idUser;
+      } else if (type === "re_answer") {
+        const answerSdp = data['sdp']; //payload.sdp;
+        const ConexionRef = findConnectionByUserId(idUser);
+        if (ConexionRef) {
+          ConexionRef.RTCconexion.setRemoteDescription(
+            new RTCSessionDescription(answerSdp)
+          );
+        }
       }
     });
 
@@ -145,75 +151,52 @@ export default function Page() {
 
   function onTrackAlone(RTC: RTCPeerConnection) {
     RTC.ontrack = (event) => {
-      console.log("Cambie el estado de los Streams ");
-      console.log("Streams:", event.streams);
-
       const receivedStreams = event.streams;
 
       receivedStreams.forEach((receivedStream) => {
         globalArrayMedia.current?.push(receivedStream);
       });
+
       concatArrayMediaStreamNow(globalArrayMedia, setGlobalArrayState);
+    };
+
+    RTC.onnegotiationneeded = (event) => {
+      console.log("ON NEREGOTIATION", event);
+      RTC.createOffer()
+        .then((offer) => {
+          return RTC.setLocalDescription(offer);
+        })
+        .then(() =>
+          socket.current?.send(
+            JSON.stringify({
+              type: "renegotiation_offer",
+              sdp: RTC.localDescription,
+            })
+          )
+        )
+        .catch((err) => {
+          console.log("ERR:", err);
+        });
     };
   }
 
   const addTracksToLocalConnection = (
     peerConnection: RTCPeerConnection,
-    streams: MediaStream[]
+    streams: MediaStream | undefined //[]
   ) => {
     console.log("--------------------------------------------------------");
-    const mergedMediaStream = new MediaStream();
-
     console.log("Esta es la Lista que voy a iterar:", streams);
 
-    const copiaListaMediaStreams = streams.slice();
-    copiaListaMediaStreams.reverse();
+    //const copiaListaMediaStreams = streams.slice();
 
-    copiaListaMediaStreams.forEach((mediaStream) => {
-      mediaStream.getTracks().forEach((track) => {
-        mergedMediaStream.addTrack(track);
-      });
-      const numTracks = mediaStream.getTracks().length;
-      console.log(
-        `El MediaStream ${mediaStream.id}: tiene ${numTracks} pistas.`
-      );
-    });
-
-    if (mergedMediaStream.getTracks().length > 0) {
-      // copiaListaMediaStreams.forEach((mediaStream) => {
-      //   mediaStream.getTracks().forEach((track) => {
-      //     peerConnection.addTrack(track, mediaStream);
-      //   });
-      // });
-
-      if (copiaListaMediaStreams.length > 1) {
-        console.log("EJECUTE EL IF");
-        console.log(copiaListaMediaStreams);
-        mergedMediaStream.getTracks().forEach((track) => {
-          peerConnection.addTrack(
-            track,
-            copiaListaMediaStreams[0],
-            copiaListaMediaStreams[1]
-          );
+    if (streams) {
+      streams.getTracks().forEach((track) => {
+        peerConnection.addTransceiver(track, {
+          streams: [streams],
         });
-      } else {
-        mergedMediaStream.getTracks().forEach((track) => {
-          peerConnection.addTrack(track, mergedMediaStream);
-        });
-      }
-
-      //// Verificar si el MediaStream se agregó correctamente
-      const senders = peerConnection.getSenders();
-      const trackToCheck = mergedMediaStream.getTracks();
-
-      console.log("Estos son los tracks all", trackToCheck);
-
-      senders.some((sender) => {
-        console.log("sender", sender);
-        sender.track &&
-          sender.track.kind === mergedMediaStream.getTracks()[0].kind;
       });
     }
+
     console.log("--------------------------------------------------------");
   };
 
@@ -234,6 +217,7 @@ export default function Page() {
         );
       }
     );
+
     setState(arraySinDuplicados);
     ref.current = arraySinDuplicados;
 
@@ -346,6 +330,43 @@ export default function Page() {
               className="flex p-2 h-12 w-12 justify-center items-center bg-gray-950 rounded-full hover:bg-purple-950"
             >
               <FontAwesomeIcon icon={faMessage} />
+            </div>
+
+            <div
+              onClick={() => {
+                const transceivers =
+                  PeerConnectionRefs.current[0].RTCconexion.getTransceivers();
+                console.log("TRANSCEPTORES:", transceivers);
+
+                const configuration =
+                  PeerConnectionRefs.current[0].RTCconexion.getConfiguration();
+
+                // Ver la configuración en la consola
+                console.log(configuration);
+                console.log(configuration.bundlePolicy);
+
+                // transceivers.forEach((transceiver) => {
+                //   console.log("Trasceiver:", transceivers);
+
+                //   const sender = transceiver.sender;
+                //   console.log("Sender:", sender);
+
+                //   const receiver = transceiver.receiver;
+                //   console.log("Receiver:", receiver);
+                // });
+                // // Mostrar todos los "senders"
+                // const senders =
+                //   PeerConnectionRefs.current[0].RTCconexion.getSenders();
+                // console.log("Senders:", senders);
+
+                // // Mostrar todos los "receivers"
+                // const receivers =
+                //   PeerConnectionRefs.current[0].RTCconexion.getReceivers();
+                // console.log("Receivers:", receivers);
+              }}
+              className="flex p-2 h-12 w-12 justify-center items-center bg-gray-950 rounded-full hover:bg-purple-950"
+            >
+              GET
             </div>
           </div>
         </div>
