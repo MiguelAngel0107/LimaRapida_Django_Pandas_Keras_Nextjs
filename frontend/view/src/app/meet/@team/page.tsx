@@ -78,8 +78,8 @@ export default function Page() {
         );
       } else if (
         type === "candidate" &&
-        PeerConnection.current &&
-        CountICE.current <= 3
+        PeerConnection.current //&&
+        //CountICE.current <= 3
       ) {
         const candidate = data; //payload.candidate;
         const iceCandidate = new RTCIceCandidate(candidate);
@@ -101,6 +101,7 @@ export default function Page() {
         data["receiver"] == idUserWebSocket.current
       ) {
         const offerSdp = data["sdp"]; //payload.sdp;
+        console.log("ME HA LLEGADO UNA RENEGOCIACION");
 
         PeerConnection.current.setRemoteDescription(
           new RTCSessionDescription(offerSdp)
@@ -266,6 +267,24 @@ export default function Page() {
     };
   }
 
+  function styleGrid(size: number, index: number): [string, string] {
+    console.log(size, index);
+    switch (size) {
+      case 1:
+        return ["col-span-4", "h-[88vh]"];
+      case 2:
+        return ["col-span-2", "h-[88vh]"];
+      case 3:
+        if (index == 2) {
+          return ["col-start-1 col-span-2", "h-[44vh]"];
+        } else {
+          return ["col-span-2", "h-[44vh]"];
+        }
+      default:
+        return ["", ""];
+    }
+  }
+
   return (
     <>
       <Transition appear show={isOpen} as={Fragment}>
@@ -336,20 +355,22 @@ export default function Page() {
             openChat ? "col-span-8" : "col-span-10"
           } bg-gradient-to-t from-purple-950/60 to-gray-950 rounded-3xl`}
         >
-          <div>
-            <div className="w-full bg-purple-900 rounded-t-3xl p-2">
-              options
-            </div>
+          <div className="flex-col h-screen">
+            {/*        <div className="w-full bg-purple-900 rounded-t-3xl p-2">options</div>*/}
 
             {/* Participantes */}
-            <div className="grid grid-cols-4 justify-items-center my-4 gap-x-0 gap-y-6">
+            <div className="grid grid-cols-4 justify-items-center my-4 h-[88vh]">
               {globalArrayState.map((person, index) => {
                 // const mediaStream = new MediaStream();
                 // mediaStream.addTrack(person);
+                const [span, height] = styleGrid(
+                  globalArrayState.length,
+                  index
+                );
                 return (
                   <div
                     key={index}
-                    className={`w-full col-span-1 h-[80vh] bg-gray-950 rounded-2xl flex justify-center items-center border border-purple-950/30`}
+                    className={`${span} bg-gray-950 rounded-2xl flex justify-center items-center border border-purple-950/30`}
                   >
                     <video
                       ref={(ref) => {
@@ -357,7 +378,7 @@ export default function Page() {
                           ref.srcObject = person;
                         }
                       }}
-                      className="rounded-2xl"
+                      className={`rounded-2xl w-full ${height}`}
                       autoPlay
                       playsInline
                     />

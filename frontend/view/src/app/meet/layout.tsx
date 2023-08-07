@@ -57,8 +57,8 @@ function Layout({
         leaveFrom="transform translate-x-0"
         leaveTo="transform translate-x-[-100%]"
       >
-        <div className=" bg-purple-700 w-[40vw] rounded-3xl p-4 flex flex-col">
-          Panel 1
+        <div className=" bg-purple-700 w-[40vw] h-[70vh] rounded-3xl p-4 flex flex-col justify-center">
+          
           <button
             type="button"
             className=" rounded-3xl border-2 border-white p-2 hover:bg-white hover:text-purple-700 font-semibold"
@@ -78,8 +78,8 @@ function Layout({
         leaveFrom="transform translate-x-0"
         leaveTo="transform translate-x-[100%]"
       >
-        <div className=" bg-white text-purple-700 w-[40vw] rounded-3xl p-4 flex flex-col">
-          Panel 2
+        <div className=" bg-white text-purple-700 w-[40vw] h-[70vh] rounded-3xl p-4 flex flex-col justify-center">
+          
           <button
             type="button"
             className="rounded-3xl border-2 border-purple-700 p-2 hover:bg-purple-700 hover:text-white font-semibold"
