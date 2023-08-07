@@ -95,7 +95,11 @@ export default function Page() {
           });
       } else if (type === "connected") {
         idUserWebSocket.current = idUser;
-      } else if (type === "re_offer" && PeerConnection.current) {
+      } else if (
+        type === "re_offer" &&
+        PeerConnection.current &&
+        data["receiver"] == idUserWebSocket.current
+      ) {
         const offerSdp = data["sdp"]; //payload.sdp;
 
         PeerConnection.current.setRemoteDescription(
@@ -148,7 +152,6 @@ export default function Page() {
           streams: [stream],
         });
       });
-      peerConnection.addTransceiver("video");
     }
   };
 
