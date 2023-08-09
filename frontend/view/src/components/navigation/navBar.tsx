@@ -99,30 +99,30 @@ const NavBar = () => {
 
   const navDesktop = (
     <nav className="hidden sm:flex justify-center items-center gap-4">
-      <div className="bg-purple-700 hover:bg-purple-900 py-2.5 px-3.5 rounded-3xl shadow-nav shadow-white hover:shadow-white transition duration-300 hover:shadow-nav_hover transform hover:translate-y-1">
-        <Link href={"/blog"}>
+      <div className="bg-purple-700 hover:bg-purple-900 py-1.5 px-2.5 rounded-3xl shadow-nav shadow-white hover:shadow-white transition duration-300 hover:shadow-nav_hover transform hover:translate-y-1">
+        <Link href={"/search"}>
           <span className="text-white font-bold text-xl">Buscar</span>
         </Link>
       </div>
 
-      <div className="bg-purple-700 hover:bg-purple-900 py-2.5 px-3.5 rounded-3xl shadow-nav shadow-white hover:shadow-white transition duration-300 hover:shadow-nav_hover transform hover:translate-y-1">
+      <div className="bg-purple-700 hover:bg-purple-900 py-1.5 px-2.5 rounded-3xl shadow-nav shadow-white hover:shadow-white transition duration-300 hover:shadow-nav_hover transform hover:translate-y-1">
         <Link href={"/meet"}>
           <span className="text-white font-bold text-xl">Reuniones</span>
         </Link>
       </div>
 
-      <div className="bg-purple-700 hover:bg-purple-900 px-4 py-3 rounded-full shadow-nav shadow-white hover:shadow-white transition duration-300 hover:shadow-nav_hover transform hover:translate-y-1">
+      <div className="bg-purple-700 hover:bg-purple-900 px-3 py-2 rounded-full shadow-nav shadow-white hover:shadow-white transition duration-300 hover:shadow-nav_hover transform hover:translate-y-1">
         <Link href={"/"}>
-          <FontAwesomeIcon icon={faHouse} className="w-10 h-10 text-white" />
+          <FontAwesomeIcon icon={faHouse} className="w-9 h-9 text-white" />
         </Link>
       </div>
 
-      <div className="bg-purple-700 hover:bg-purple-900 py-2.5 px-3.5 rounded-3xl shadow-nav shadow-white hover:shadow-white transition duration-300 hover:shadow-nav_hover transform hover:translate-y-1">
+      <div className="bg-purple-700 hover:bg-purple-900 py-1.5 px-2.5 rounded-3xl shadow-nav shadow-white hover:shadow-white transition duration-300 hover:shadow-nav_hover transform hover:translate-y-1">
         <Link href={"/chat"}>
           <span className="text-white font-bold text-xl">Mensajeria</span>
         </Link>
       </div>
-      <div className="bg-purple-700 hover:bg-purple-900 py-2.5 px-3.5 rounded-3xl shadow-nav shadow-white hover:shadow-white transition duration-300 hover:shadow-nav_hover transform hover:translate-y-1">
+      <div className="bg-purple-700 hover:bg-purple-900 py-1.5 px-2.5 rounded-3xl shadow-nav shadow-white hover:shadow-white transition duration-300 hover:shadow-nav_hover transform hover:translate-y-1">
         <Link href={"/blog"}>
           <span className="text-white font-bold text-xl">Posting</span>
         </Link>
@@ -131,15 +131,15 @@ const NavBar = () => {
   );
 
   const navMobile = (
-    <nav className="flex sm:hidden justify-between w-full items-center gap-4 px-6">
-      <div className="bg-purple-700 hover:bg-purple-900 px-4 py-3 rounded-full shadow-nav shadow-white hover:shadow-white transition duration-300 hover:shadow-nav_hover transform hover:translate-y-1">
+    <nav className="flex sm:hidden w-full items-center gap-4 px-2">
+      <div className="w-full flex justify-center bg-purple-700 hover:bg-purple-900 px-4 py-1.5 rounded-full shadow-nav shadow-white hover:shadow-white transition duration-300 hover:shadow-nav_hover transform hover:translate-y-1">
         <Link href={"/"}>
-          <FontAwesomeIcon icon={faHouse} className="w-10 h-10 text-white" />
+          <FontAwesomeIcon icon={faHouse} className="w-7 h-7 text-white" />
         </Link>
       </div>
-      <div className="bg-purple-700 hover:bg-purple-900 px-4 py-3 rounded-full shadow-nav shadow-white hover:shadow-white transition duration-300 hover:shadow-nav_hover transform hover:translate-y-1">
+      <div className="w-full flex justify-center bg-purple-700 hover:bg-purple-900 px-4 py-1.5 rounded-full shadow-nav shadow-white hover:shadow-white transition duration-300 hover:shadow-nav_hover transform hover:translate-y-1">
         <button onClick={toggleMenu}>
-          <FontAwesomeIcon icon={faBars} className="w-10 h-10 text-white" />
+          <FontAwesomeIcon icon={faBars} className="w-7 h-7 text-white" />
         </button>
       </div>
     </nav>
@@ -151,7 +151,7 @@ const NavBar = () => {
         <div>
           <Link
             className="text-white font-bold text-sm px-2 no-underline hover:underline"
-            href={"/#"}
+            href={"/nosotros"}
           >
             Términos y Condiciones
           </Link>
@@ -232,17 +232,12 @@ const NavBar = () => {
                   Inicio
                 </Link>
                 <Link
-                  href="/blog"
+                  href="/search"
                   className="text-gray-300 hover:text-white px-4 py-2 rounded-md transition-colors duration-300 group"
                 >
-                  Blog - Encuestas
+                  Buscar
                 </Link>
-                <Link
-                  href="/game"
-                  className="text-gray-300 hover:text-white px-4 py-2 rounded-md transition-colors duration-300 group"
-                >
-                  Juego de Imagenes
-                </Link>
+
                 <Link
                   href="/meet"
                   className="text-gray-300 hover:text-white px-4 py-2 rounded-md transition-colors duration-300 group"
@@ -255,11 +250,12 @@ const NavBar = () => {
                 >
                   Chat en Vivo
                 </Link>
+
                 <Link
-                  href="/nosotros"
+                  href="/blog"
                   className="text-gray-300 hover:text-white px-4 py-2 rounded-md transition-colors duration-300 group"
                 >
-                  Nosotros
+                  Blog
                 </Link>
               </div>
             </Transition.Child>

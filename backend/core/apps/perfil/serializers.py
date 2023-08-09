@@ -17,20 +17,23 @@ class UserProfileSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-
 class PublicProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
         fields = [
+            'id',
             'picture',
             'banner',
             'verified',
             'url',
-            'bio',]   
+            'birthday',
+            'bio',
+            'user']
+
 
 class UserPublicProfileSerializer(serializers.ModelSerializer):
     profile = PublicProfileSerializer()
 
     class Meta:
         model = CustomUser
-        fields = ['id', 'email', 'name', 'profile']  
+        fields = ['id', 'email', 'name', 'profile']

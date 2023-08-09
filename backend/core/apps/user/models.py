@@ -1,7 +1,6 @@
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-# from apps.perfil.models import UserProfile
 
 
 class CustomUserManager(BaseUserManager):
@@ -16,7 +15,9 @@ class CustomUserManager(BaseUserManager):
         user.set_password(password)
         user.save()
 
-        # UserProfile.objects.create(user=user)  # Crear instancia de UserProfile
+        from apps.perfil.models import UserProfile
+        UserProfile.objects.create(user=user)
+
         return user
 
     def create_superuser(self, email, password, **extra_fields):

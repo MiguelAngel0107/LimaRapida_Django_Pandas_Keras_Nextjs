@@ -15,5 +15,6 @@ urlpatterns = [
 
     path('meet/', include('apps.meet.urls')),
     path('functions/', include('apps.functions.urls')),
+    path("profile/", include('apps.perfil.urls')),
     path("admin/", admin.site.urls),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
