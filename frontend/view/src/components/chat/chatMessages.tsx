@@ -1,29 +1,34 @@
 import React, { useState, useEffect, useRef } from "react";
 import ChatInput from "./chatInput";
-import { APP_URL_WS_BACK } from "@/globals";
+import { APP_URL_WS_BACK, APP_URL_HTTP_BACK } from "@/globals";
 import { useAppSelector } from "@/redux/hooks";
+import axios from "axios";
 
 interface listMessageProps {
   username: string;
   message: string;
+  timestamp: string;
 }
 
-function ChatMessages() {
+interface MessageProps {
+  unique_code: string;
+  id_chat: number;
+  name_chat: string;
+}
+
+function ChatMessages(props: MessageProps) {
   const dataUser = useAppSelector((state) => state.Auth.user);
 
   const [chatSocket, setChatSocket] = useState<WebSocket | null>(null);
-  const [listMessage, setListMessage] = useState<listMessageProps[]>([]);
 
   const [text, setText] = useState("");
+  const [listMessage, setListMessage] = useState<listMessageProps[]>([]);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
   const containerRef = useRef<HTMLUListElement>(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const [lastPositionX, setLastPositionX] = useState(0);
-  const [lastPositionY, setLastPositionY] = useState(0);
 
   useEffect(() => {
-    const socket = new WebSocket(`${APP_URL_WS_BACK}/ws/holamundo/`);
+    const socket = new WebSocket(`${APP_URL_WS_BACK}/ws/${props.unique_code}/`);
 
     socket.addEventListener("open", () => {
       console.log("WebSocket connection established.");
@@ -44,7 +49,25 @@ function ChatMessages() {
     return () => {
       socket.close();
     };
-  }, []);
+  }, [props.id_chat]);
+
+  useEffect(() => {
+    const config = {
+      headers: {
+        Accept: "application/json",
+        Authorization: `JWT ${localStorage.getItem("access")}`,
+      },
+    };
+    axios
+      .get(`${APP_URL_HTTP_BACK}/chat/${props.id_chat}/messages/`, config)
+      .then((response) => {
+        if (response.status == 200) {
+          setListMessage(response.data);
+        }
+      });
+
+    return setListMessage([]);
+  }, [props.id_chat]);
 
   useEffect(() => {
     // Scroll to bottom when new messages are added
@@ -56,10 +79,6 @@ function ChatMessages() {
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     //console.log("Paso el InputChange");
     setText(event.target.value);
-  };
-
-  const handleEmojiSelect = (emoji: string) => {
-    setText(text + emoji);
   };
 
   const toggleEmojiPicker = () => {
@@ -74,35 +93,39 @@ function ChatMessages() {
     chatSocket?.send(
       JSON.stringify({
         message: text,
-        username: dataUser?.name,
-        room: "holamundo",
+        username: dataUser?.email,
+        room: props.unique_code,
       })
     );
 
     setText("");
   };
 
-  const messages = [
-    {
-      id: 1,
-      content: "Hola, ¿cómo estás?",
-      sender: "Juan Perez",
-      timestamp: "Hace 5 minutos",
-    },
-  ];
+  function formatTimeAgo(dateString: string): string {
+    const currentTime = new Date();
+    const pastTime = new Date(dateString);
+    const timeDifference = currentTime.getTime() - pastTime.getTime();
 
-  //let MessagesFilters;
-  //listMessage ? (MessagesFilters = listMessage) : (MessagesFilters = messages);
-  //let MessagesBackennd;
-  //ListMessages
-  //  ? (MessagesBackennd = ListMessages)
-  //  : (MessagesBackennd = messages);
+    const seconds = Math.floor(timeDifference / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+
+    if (days > 0) {
+      return `hace ${days} día${days !== 1 ? "s" : ""}`;
+    } else if (hours > 0) {
+      return `hace ${hours} hora${hours !== 1 ? "s" : ""}`;
+    } else if (minutes > 0) {
+      return `hace ${minutes} minuto${minutes !== 1 ? "s" : ""}`;
+    } else {
+      return "hace unos segundos";
+    }
+  }
 
   return (
     <div className="flex-col w-full bg-purple-950/20 text-white rounded-3xl">
       <div className="flex justify-between text-lg font-medium mb-4 bg-purple-950 rounded-t-3xl p-3">
-        <p>Barra Informacion</p>
-        <button>Retroceder</button>
+        <p>{props.name_chat}</p>
       </div>
 
       <div className="relative w-full h-[62vh] overflow-hidden p-3">
@@ -112,67 +135,30 @@ function ChatMessages() {
           }`}
           ref={containerRef}
         >
-          <>
-            {/*MessagesBackennd.map((message, index) => (
-          <li
-            key={index}
-            className={`flex flex-col ${
-              message.username === idUser ? "items-end" : "items-start"
-            }`}
-          >
-            <div
-              className={`inline-block px-4 py-2 rounded-lg ${
-                message.username === idUser
-                  ? "bg-indigo-600 text-white rounded-br-none"
-                  : "bg-gray-100 text-gray-900 rounded-bl-none"
-              }`}
-            >
-              <p className="text-sm">{message.message}</p>
-            </div>
-            <span className="text-xs text-gray-400 mt-1">Undefined</span>
-          </li>
-        ))}
-        {MessagesFilters.map((message, index) => (
-          <li
-            key={index}
-            className={`flex flex-col ${
-              message.username === idUser ? "items-end" : "items-start"
-            }`}
-          >
-            <div
-              className={`inline-block px-4 py-2 rounded-lg ${
-                message.username === idUser
-                  ? "bg-indigo-600 text-white rounded-br-none"
-                  : "bg-gray-100 text-gray-900 rounded-bl-none"
-              }`}
-            >
-              <p className="text-sm">{message.message}</p>
-            </div>
-            <span className="text-xs text-gray-400 mt-1">Undefined</span>
-          </li>
-            ))*/}
-          </>
-
           {listMessage &&
             listMessage.map((message, index) => (
               <li
                 key={index}
                 className={`flex flex-col ${
-                  message.username === dataUser?.name
+                  message.username === dataUser?.email
                     ? "items-end"
                     : "items-start"
                 }`}
               >
                 <div
                   className={`inline-block px-4 py-2 rounded-lg ${
-                    message.username === dataUser?.name
+                    message.username === dataUser?.email
                       ? "bg-violet-600 text-white rounded-br-none"
                       : "bg-gray-100 text-gray-900 rounded-bl-none"
                   }`}
                 >
                   <p className="text-sm">{message.message}</p>
                 </div>
-                {/*<span className="text-xs text-gray-400 mt-1">{dataUser?.name}</span>*/}
+                {
+                  <span className="text-xs text-gray-400 mt-1">
+                    {formatTimeAgo(message.timestamp)}
+                  </span>
+                }
               </li>
             ))}
         </ul>

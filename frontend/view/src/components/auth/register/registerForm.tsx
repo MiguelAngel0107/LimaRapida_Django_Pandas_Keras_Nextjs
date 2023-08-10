@@ -38,7 +38,7 @@ const RegisterForm: React.FC = () => {
     dispatch(signup(name, email, password, re_password, wallet_address));
   };
   return (
-    <div className="flex flex-col justify-center items-center h-[88vh] bg-gray-950">
+    <div className="flex flex-col justify-center items-center h-[1000px] bg-gray-950">
       <h1 className="bg-gradient-to-b from-purple-950/60 to-gray-950 text-4xl p-6 w-full max-w-md rounded-3xl font-bold text-white mb-12 text-center">
         Create an account
       </h1>
