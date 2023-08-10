@@ -48,8 +48,19 @@ export default function Page() {
         console.error("Error al acceder a la cámara y el micrófono:", error);
       });
 
+    const code = localStorage.getItem("code_meet");
+    if (code) {
+      setIsOpen(false);
+      socket.current = new WebSocket(
+        `${APP_URL_WS_BACK}/ws/video-test/${code}/`
+      );
+      setTimeout(() => handleStartCall(), 2000);
+    }
+
     return () => {
-      console.log("Me desmonte");
+      if (code) {
+        localStorage.removeItem("code_meet");
+      }
       socket.current?.close();
     };
   }, []);
@@ -164,7 +175,9 @@ export default function Page() {
   };
 
   const handleStartCall = async () => {
+    console.log('me ejecute fuera')
     if (localStream && PeerConnection.current) {
+      console.log('me ejecute dentro')
       addTracksToLocalConnection(PeerConnection.current, localStream);
       const offerSdp = await PeerConnection.current.createOffer();
       await controlDescriptionLocal(PeerConnection.current, offerSdp);
@@ -273,15 +286,13 @@ export default function Page() {
       case 1:
         return ["col-span-4", "h-[88vh]"];
       case 2:
-        return ["col-span-2", "h-[88vh]"];
+        return ["col-span-2", "h-[44vh]"];
       case 3:
-        if (index == 2) {
-          return ["col-start-1 col-span-2", "h-[44vh]"];
-        } else {
-          return ["col-span-2", "h-[44vh]"];
-        }
+        return ["col-span-2", "h-[44vh]"];
+      case 4:
+        return ["col-span-2", "h-[44vh]"];
       default:
-        return ["", ""];
+        return ["col-span-1", "h-[22vh]"];
     }
   }
 
@@ -381,6 +392,7 @@ export default function Page() {
                       className={`rounded-2xl w-full ${height}`}
                       autoPlay
                       playsInline
+                      muted
                     />
                   </div>
                 );
@@ -420,16 +432,6 @@ export default function Page() {
                 className="flex p-2 h-12 w-12 justify-center items-center bg-gray-950 rounded-full hover:bg-purple-950"
               >
                 <FontAwesomeIcon icon={faMessage} />
-              </div>
-
-              <div
-                onClick={() => {
-                  const transceivers = PeerConnection.current.getTransceivers();
-                  console.log("TRANSCEPTORES:", transceivers);
-                }}
-                className="flex p-2 h-12 w-12 justify-center items-center bg-gray-950 rounded-full hover:bg-purple-950"
-              >
-                GET
               </div>
             </div>
           </div>

@@ -127,8 +127,10 @@ export const put_request_friend =
       );
 
       if (res.status === 200) {
+        console.log(res.data);
         dispatch(get_requests_friends());
       } else {
+        console.log(res.data);
         dispatch(get_requests_friends());
       }
     } catch (error) {

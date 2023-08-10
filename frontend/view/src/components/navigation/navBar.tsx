@@ -228,12 +228,14 @@ const NavBar = () => {
                 <Link
                   href="/"
                   className="text-gray-300 hover:text-white px-4 py-2 rounded-md transition-colors duration-300 group"
+                  onClick={() => setIsMenuOpen(false)}
                 >
                   Inicio
                 </Link>
                 <Link
                   href="/search"
                   className="text-gray-300 hover:text-white px-4 py-2 rounded-md transition-colors duration-300 group"
+                  onClick={() => setIsMenuOpen(false)}
                 >
                   Buscar
                 </Link>
@@ -241,19 +243,22 @@ const NavBar = () => {
                 <Link
                   href="/meet"
                   className="text-gray-300 hover:text-white px-4 py-2 rounded-md transition-colors duration-300 group"
+                  onClick={() => setIsMenuOpen(false)}
                 >
-                  VideoConferencia
+                  Reuniones
                 </Link>
                 <Link
                   href="/chat"
                   className="text-gray-300 hover:text-white px-4 py-2 rounded-md transition-colors duration-300 group"
+                  onClick={() => setIsMenuOpen(false)}
                 >
-                  Chat en Vivo
+                  Mensajeria
                 </Link>
 
                 <Link
                   href="/blog"
                   className="text-gray-300 hover:text-white px-4 py-2 rounded-md transition-colors duration-300 group"
+                  onClick={() => setIsMenuOpen(false)}
                 >
                   Blog
                 </Link>

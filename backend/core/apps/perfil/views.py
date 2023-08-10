@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework import status, permissions
 
 from .models import UserProfile, FriendRequest
+from apps.chat.models import Chat
 from .serializers import UserProfileSerializer, UserPublicProfileSerializer, ProfileSerializer, PublicProfileSerializer
 from apps.user.models import CustomUser
 from rest_framework.parsers import MultiPartParser, FormParser
@@ -296,11 +297,31 @@ class FriendRequestsList(APIView):
                 friend_request.status = FriendRequest.ACCEPTED
                 friend_request.save()
 
-                # Agregar mutuamente a los usuarios como amigos
-                from_user_profile = friend_request.from_user
-                to_user_profile = friend_request.to_user
-                from_user_profile.friends.add(to_user_profile)
-                to_user_profile.friends.add(from_user_profile)
+                try:
+                    # Agregar mutuamente a los usuarios como amigos
+                    from_user_profile = friend_request.from_user
+                    to_user_profile = friend_request.to_user
+                    from_user_profile.friends.add(to_user_profile)
+                    to_user_profile.friends.add(from_user_profile)
+                except:
+                    return Response(
+                        {'error': 'No se logro agregarse como amigos'},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+
+                try:
+                    participant_ids = [
+                        from_user_profile.user.id, to_user_profile.user.id]
+                    unique_code = Chat.generate_unique_code(participant_ids)
+                    chat_instance = Chat.objects.create(
+                        unique_code=unique_code)
+                    chat_instance.participants.set(
+                        [from_user_profile.user, to_user_profile.user])
+                except:
+                    return Response(
+                        {'error': 'Error al crear el Chat'},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
 
                 return Response(
                     {'message': 'Friend request accepted'},
@@ -328,3 +349,17 @@ class FriendRequestsList(APIView):
                 {'error': 'Something went wrong when processing friend request'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+
+class UserSearchView(APIView):
+    permission_classes = (permissions.AllowAny,)
+
+    def get(self, request):
+        query = request.query_params.get('query', '').strip()
+
+        if query:
+            users = CustomUser.objects.filter(name__icontains=query)
+            user_data = [{'id': user.id, 'name': user.name} for user in users]
+            return Response(user_data, status=200)
+        else:
+            return Response([], status=200)  # No query, return an empty list

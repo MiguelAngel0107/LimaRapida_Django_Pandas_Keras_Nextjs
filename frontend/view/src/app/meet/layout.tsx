@@ -24,7 +24,6 @@ function Layout({
   const searchParams = useSearchParams();
 
   const search = searchParams.get("code");
-  console.log(search);
 
   function isAdmin() {
     setChildrenDefault("admin");
@@ -54,6 +53,10 @@ function Layout({
   }
 
   if (isAuthenticated == true) {
+    if (search?.length == 11) {
+      localStorage.setItem("code_meet", search);
+      return team;
+    }
     return (
       <div
         className={`text-white ${

@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, Fragment, useEffect, useRef } from "react";
-import { Dialog, Transition } from "@headlessui/react";
+import { Dialog, Transition, Popover } from "@headlessui/react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faMicrophone,
@@ -9,8 +9,10 @@ import {
   faVideoSlash,
   faPhoneSlash,
   faMessage,
+  faCircleInfo,
 } from "@fortawesome/free-solid-svg-icons";
 import { APP_URL_WS_BACK } from "@/globals";
+import Link from "next/link";
 
 interface Conexion {
   id: string;
@@ -21,10 +23,11 @@ export default function Page() {
   const [openChat, setOpenChat] = useState(false);
   const [onAudio, setOnAudio] = useState(false);
   const [onVideo, setOnVideo] = useState(false);
+  const [onInfo, setOnInfo] = useState(false);
 
   const socket = useRef<WebSocket>();
   const PeerConnectionRefs = useRef<Conexion[]>([]);
-  const idUserWebSocket = useRef<string>("");
+  const idUserWebSocket = useRef<string[]>([]);
 
   const globalArrayMedia = useRef<MediaStream[]>([]);
   const [globalArrayState, setGlobalArrayState] = useState<MediaStream[]>([]);
@@ -120,7 +123,8 @@ export default function Page() {
             });
         }
       } else if (type === "connected") {
-        idUserWebSocket.current = idUser;
+        idUserWebSocket.current[0] = idUser;
+        idUserWebSocket.current[1] = data.name;
       } else if (type === "re_answer") {
         const answerSdp = data["sdp"]; //payload.sdp;
         const ConexionRef = findConnectionByUserId(idUser);
@@ -312,13 +316,11 @@ export default function Page() {
       case 1:
         return ["col-span-4", "h-[88vh]"];
       case 2:
-        return ["col-span-2", "h-[88vh]"];
+        return ["col-span-2", "h-[44vh]"];
       case 3:
-        if (index == 2) {
-          return ["col-start-1 col-span-2", "h-[44vh]"];
-        } else {
-          return ["col-span-2", "h-[44vh]"];
-        }
+        return ["col-span-2", "h-[44vh]"];
+      case 4:
+        return ["col-span-2", "h-[44vh]"];
       default:
         return ["", ""];
     }
@@ -353,6 +355,7 @@ export default function Page() {
                     className={`rounded-2xl w-full ${height}`}
                     autoPlay
                     playsInline
+                    muted
                   />
                 </div>
               );
@@ -393,17 +396,22 @@ export default function Page() {
             >
               <FontAwesomeIcon icon={faMessage} />
             </div>
-
-            <div
-              onClick={() => {
-                const transceivers =
-                  PeerConnectionRefs.current[0].RTCconexion.getTransceivers();
-                console.log("TRANSCEPTORES:", transceivers);
-              }}
-              className="flex p-2 h-12 w-12 justify-center items-center bg-gray-950 rounded-full hover:bg-purple-950"
-            >
-              GET
-            </div>
+            <Popover>
+              <Popover.Button>
+                <div className="flex p-2 h-12 w-12 justify-center items-center bg-gray-950 rounded-full hover:bg-purple-950">
+                  <FontAwesomeIcon icon={faCircleInfo} />
+                </div>
+              </Popover.Button>
+              <Popover.Panel className="flex flex-col justify-center text-center absolute -bottom-24 bg-white p-4 rounded-3xl text-black border-2 border-purple-600 ">
+                Este es el link de la Reunion:
+                <Link
+                  href="/reunion"
+                  className="text-purple-600 hover:underline"
+                >
+                  https://www.owndark.com/meet?code={idUserWebSocket.current[1]}
+                </Link>
+              </Popover.Panel>
+            </Popover>
           </div>
         </div>
       </div>

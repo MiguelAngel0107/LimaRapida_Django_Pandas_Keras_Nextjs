@@ -96,7 +96,7 @@ export default function Page() {
         )}
       </div>
 
-      {window.innerWidth >= 500 ? (
+      {false ? (
         <SubMenu1 setHover={setHover} hover={hover} />
       ) : (
         <SubMenu2 setHover={setHover} hover={hover} />

@@ -134,7 +134,8 @@ class VideoCallConsumerTesting(AsyncWebsocketConsumer):
 
         await self.send(text_data=json.dumps({
             'type': 'connected',
-            'idUser': self.channel_name
+            'idUser': self.channel_name,
+            'name': self.room_name
         }))
 
     async def disconnect(self, close_code):
