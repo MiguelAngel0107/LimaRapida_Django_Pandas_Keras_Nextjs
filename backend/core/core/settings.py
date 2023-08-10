@@ -33,9 +33,9 @@ APPS_DEFAULT = [
 
 PRIMARY_APPS = [
     'apps.user',
-    'apps.chat',
-    'apps.meet',
     'apps.perfil',
+    'apps.meet',
+    'apps.chat',
     # 'apps.geografia',
     # 'apps.carreteras',
     # 'apps.analisis',
