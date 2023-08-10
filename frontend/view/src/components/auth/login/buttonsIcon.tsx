@@ -4,6 +4,8 @@ import {
   faFacebook,
   faEthereum,
 } from "@fortawesome/free-brands-svg-icons";
+import { GoogleOAuthProvider } from "@react-oauth/google";
+import { GoogleLogin } from "@react-oauth/google";
 
 const ButtonGroup = (/*props*/) => {
   return (
@@ -19,10 +21,20 @@ const ButtonGroup = (/*props*/) => {
           <FontAwesomeIcon icon={faFacebook} className="mr-2" />
           Facebook
         </button>
-        <button className="bg-black hover:bg-gray-800 text-white font-bold py-2 px-4 rounded-full flex items-center justify-center">
+        <GoogleOAuthProvider clientId="853273190094-ifrcvtch8rc2ba2fbn723s6hjbf617sd.apps.googleusercontent.com">
+          <GoogleLogin
+            onSuccess={(credentialResponse) => {
+              console.log(credentialResponse);
+            }}
+            onError={() => {
+              console.log("Login Failed");
+            }}
+          />
+        </GoogleOAuthProvider>
+        {/*<button className="bg-black hover:bg-gray-800 text-white font-bold py-2 px-4 rounded-full flex items-center justify-center">
           <FontAwesomeIcon icon={faGoogle} className="mr-2" />
           Google
-        </button>
+          </button>*/}
         {/*<button
           onClick={(e) => props.setWeb3(!props.web3)}
           className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-full flex items-center justify-center"
@@ -36,4 +48,3 @@ const ButtonGroup = (/*props*/) => {
 };
 
 export default ButtonGroup;
-

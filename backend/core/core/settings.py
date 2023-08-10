@@ -34,8 +34,8 @@ APPS_DEFAULT = [
 PRIMARY_APPS = [
     'apps.user',
     'apps.perfil',
+    'apps.meet',
     'apps.chat',
-    'apps.meet'
     # 'apps.geografia',
     # 'apps.carreteras',
     # 'apps.analisis',
@@ -52,7 +52,8 @@ TERTIARY_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
-    'djoser'
+    'djoser',
+    #'social_django',
 ]
 
 INSTALLED_APPS = APPS_DEFAULT + PRIMARY_APPS + SECONDARY_APPS + TERTIARY_APPS
@@ -91,9 +92,9 @@ DJOSER = {
     'PASSWORD_RESET_CONFIRM_RETYPE': True,
     'USERNAME_RESET_CONFIRM_URL': 'email/reset/confirm/{uid}/{token}',
     'ACTIVATION_URL': 'activate/{uid}/{token}',
-    'SEND_ACTIVATION_EMAIL': True,
-    'SOCIAL_AUTH_TOKEN_STRATEGY': 'djoser.social.token.jwt.TokenStrategy',
-    'SOCIAL_AUTH_ALLOWED_REDIRECT_URIS': ['http://localhost:8000/google', 'http://localhost:8000/facebook'],
+    'SEND_ACTIVATION_EMAIL': False,
+    #'SOCIAL_AUTH_TOKEN_STRATEGY': 'djoser.social.token.jwt.TokenStrategy',
+    #'SOCIAL_AUTH_ALLOWED_REDIRECT_URIS': ['http://localhost:8000/google', 'http://localhost:8000/facebook'],
     'SERIALIZERS': {
         'user_create': 'apps.user.serializers.UserCreateSerializer',
         'user': 'apps.user.serializers.UserCreateSerializer',

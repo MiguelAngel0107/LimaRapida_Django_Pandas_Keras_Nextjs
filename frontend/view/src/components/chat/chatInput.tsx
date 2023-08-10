@@ -1,6 +1,6 @@
 import React, { ReactElement } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSmile } from "@fortawesome/free-solid-svg-icons";
+import { faSmile, faPaperPlane } from "@fortawesome/free-solid-svg-icons";
 
 interface Props {
   text: string;
@@ -32,14 +32,14 @@ function ChatInput(props: Props): ReactElement {
           type="text"
           value={props.text}
           onChange={props.handleInputChange}
-          className="text-gray-900 flex-1 rounded-full border-2 border-violet-600 px-4 py-2 focus:outline-none focus:border-violet-500"
+          className="text-gray-900 flex w-full rounded-full border-2 border-violet-600 px-4 py-2"
         />
         <button
           type="submit"
           className="ml-2 bg-violet-600 text-white rounded-full px-4 py-2 focus:outline-none hover:bg-violet-500"
           disabled={!props.text.trim()}
         >
-          Enviar
+          <FontAwesomeIcon icon={faPaperPlane}/>
         </button>
       </form>
     </div>

@@ -4,8 +4,9 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, permissions
 
-# from .models import UserProfile
-from .serializers import UserProfileSerializer, UserPublicProfileSerializer
+from .models import UserProfile, FriendRequest
+from apps.chat.models import Chat
+from .serializers import UserProfileSerializer, UserPublicProfileSerializer, ProfileSerializer, PublicProfileSerializer
 from apps.user.models import CustomUser
 from rest_framework.parsers import MultiPartParser, FormParser
 
@@ -161,22 +162,15 @@ class UserProfileUpdateEcommerce(APIView):
 
 
 class UserViewData(APIView):
-    permission_classes = [permissions.IsAuthenticated,]
-
     def get(self, request):
         user = self.request.user
 
         try:
-            user_profile = UserProfileSerializer(user)
-            user_profile_data = user_profile.data
+            user_profile = user.user_perfil
 
-            products_json = serializers.serialize('json', user.get_products(), fields=(
-                'name', 'photo', 'description', 'price', 'compare_price', 'category', 'quantity', 'sold'))
-            products = json.loads(products_json)
-            user_profile_data['products'] = products
-
+            serializer = ProfileSerializer(user_profile)
             return Response(
-                user_profile_data,
+                serializer.data,
                 status=status.HTTP_200_OK
             )
         except:
@@ -192,19 +186,13 @@ class PublicProfileUserView(APIView):
     def get(self, request, pk):
 
         try:
-            user_profile_object = CustomUser.objects.get(id=pk)
-            # print("hasta aqui llegue")
-            user_profile = UserPublicProfileSerializer(user_profile_object)
+            user_profile_object = UserProfile.objects.get(id=pk)
+
+            user_profile = PublicProfileSerializer(user_profile_object)
 
             user_profile_data = user_profile.data
-            # print(user_profile_data)
 
-            # Agregar la función get_products a la respuesta
-            products_json = serializers.serialize('json', user_profile_object.get_products(), fields=(
-                'name', 'photo', 'description', 'price', 'compare_price', 'category', 'quantity', 'sold'))
-            products = json.loads(products_json)
-            # print(products)
-            user_profile_data['products'] = products
+            user_profile_data['name'] = user_profile_object.user.name
 
             return Response(
                 user_profile_data,
@@ -216,3 +204,162 @@ class PublicProfileUserView(APIView):
                 {'error': 'Something went wrong when updating profile'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+
+class SendFriendRequest(APIView):
+
+    def post(self, request):
+        # Perfil del usuario que envía la solicitud
+        from_user = request.user.user_perfil
+        # ID del usuario al que se envía la solicitud
+        to_user_id = request.data.get('to_user')
+
+        try:
+            to_user_profile = UserProfile.objects.get(
+                id=to_user_id)  # Perfil del usuario destinatario
+
+            # Verificar si ya existe una solicitud pendiente o aceptada entre los usuarios
+            existing_request = FriendRequest.objects.filter(
+                from_user=from_user, to_user=to_user_profile
+            ).exclude(status=FriendRequest.REJECTED).first()
+
+            if existing_request:
+                return Response(
+                    {'error': 'Friend request already exists or has been accepted'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Crear la solicitud de amistad
+            friend_request = FriendRequest.objects.create(
+                from_user=from_user,
+                to_user=to_user_profile,
+                status=FriendRequest.PENDING
+            )
+
+            return Response(
+                {'message': 'Friend request sent'},
+                status=status.HTTP_201_CREATED
+            )
+        except UserProfile.DoesNotExist:
+            return Response(
+                {'error': 'User not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            return Response(
+                {'error': 'Something went wrong when sending friend request'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+class FriendRequestsList(APIView):
+
+    def get(self, request):
+        user_profile = self.request.user.user_perfil  # Perfil del usuario autenticado
+        try:
+            friend_requests_received = FriendRequest.objects.filter(
+                to_user=user_profile, status=FriendRequest.PENDING
+            )
+
+            serializer_data = []
+            for request_obj in friend_requests_received:
+                serializer_data.append({
+                    'id_request': request_obj.id,
+                    'from_user': request_obj.from_user.user.email,
+                    'status': request_obj.status,
+                    'created_at': request_obj.created_at
+                })
+
+            return Response(
+                serializer_data,
+                status=status.HTTP_200_OK
+            )
+        except Exception as e:
+            return Response(
+                {'error': 'Something went wrong when fetching friend requests'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    def post(self, request):
+        friend_request_id = request.data.get('friend_request_id')
+        action = request.data.get('action')  # 'accept' o 'reject'
+
+        try:
+            friend_request = FriendRequest.objects.get(id=friend_request_id)
+
+            if friend_request.to_user.user != self.request.user:
+                return Response(
+                    {'error': 'Unauthorized'},
+                    status=status.HTTP_401_UNAUTHORIZED
+                )
+
+            if action == 'accept':
+                friend_request.status = FriendRequest.ACCEPTED
+                friend_request.save()
+
+                try:
+                    # Agregar mutuamente a los usuarios como amigos
+                    from_user_profile = friend_request.from_user
+                    to_user_profile = friend_request.to_user
+                    from_user_profile.friends.add(to_user_profile)
+                    to_user_profile.friends.add(from_user_profile)
+                except:
+                    return Response(
+                        {'error': 'No se logro agregarse como amigos'},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+
+                try:
+                    participant_ids = [
+                        from_user_profile.user.id, to_user_profile.user.id]
+                    unique_code = Chat.generate_unique_code(participant_ids)
+                    chat_instance = Chat.objects.create(
+                        unique_code=unique_code)
+                    chat_instance.participants.set(
+                        [from_user_profile.user, to_user_profile.user])
+                except:
+                    return Response(
+                        {'error': 'Error al crear el Chat'},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+
+                return Response(
+                    {'message': 'Friend request accepted'},
+                    status=status.HTTP_200_OK
+                )
+            elif action == 'reject':
+                friend_request.status = FriendRequest.REJECTED
+                friend_request.save()
+                return Response(
+                    {'message': 'Friend request rejected'},
+                    status=status.HTTP_200_OK
+                )
+            else:
+                return Response(
+                    {'error': 'Invalid action'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        except FriendRequest.DoesNotExist:
+            return Response(
+                {'error': 'Friend request not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            return Response(
+                {'error': 'Something went wrong when processing friend request'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+class UserSearchView(APIView):
+    permission_classes = (permissions.AllowAny,)
+
+    def get(self, request):
+        query = request.query_params.get('query', '').strip()
+
+        if query:
+            users = CustomUser.objects.filter(name__icontains=query)
+            user_data = [{'id': user.id, 'name': user.name} for user in users]
+            return Response(user_data, status=200)
+        else:
+            return Response([], status=200)  # No query, return an empty list
