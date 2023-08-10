@@ -1,10 +1,10 @@
 from django.db import models
 import hashlib
 from django.contrib.auth import get_user_model 
-User = get_user_model()
+from apps.user.models import CustomUser
 
 class Chat(models.Model):
-    participants = models.ManyToManyField(User, related_name='chats')
+    participants = models.ManyToManyField(CustomUser, related_name='chats')
     unique_code = models.CharField(max_length=64, unique=True)
 
     @classmethod
@@ -16,7 +16,7 @@ class Chat(models.Model):
         return unique_code
 
 class Message(models.Model):
-    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='messages_sent')
+    sender = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='messages_sent')
     chat = models.ForeignKey(Chat, on_delete=models.CASCADE, related_name='messages')
     content = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
