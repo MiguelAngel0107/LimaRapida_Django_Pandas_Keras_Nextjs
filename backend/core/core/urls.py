@@ -13,7 +13,11 @@ urlpatterns = [
     path('auth/', include('djoser.urls.jwt')),
     path('auth/', include('djoser.social.urls')),
 
+    path('chat/', include('apps.chat.urls')),
     path('meet/', include('apps.meet.urls')),
+    path("profile/", include('apps.perfil.urls')),
+
     path('functions/', include('apps.functions.urls')),
+    
     path("admin/", admin.site.urls),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

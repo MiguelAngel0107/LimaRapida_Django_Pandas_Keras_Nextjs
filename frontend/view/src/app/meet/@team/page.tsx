@@ -48,8 +48,19 @@ export default function Page() {
         console.error("Error al acceder a la cámara y el micrófono:", error);
       });
 
+    const code = localStorage.getItem("code_meet");
+    if (code) {
+      setIsOpen(false);
+      socket.current = new WebSocket(
+        `${APP_URL_WS_BACK}/ws/video-test/${code}/`
+      );
+      setTimeout(() => handleStartCall(), 2000);
+    }
+
     return () => {
-      console.log("Me desmonte");
+      if (code) {
+        localStorage.removeItem("code_meet");
+      }
       socket.current?.close();
     };
   }, []);
@@ -78,8 +89,8 @@ export default function Page() {
         );
       } else if (
         type === "candidate" &&
-        PeerConnection.current &&
-        CountICE.current <= 3
+        PeerConnection.current //&&
+        //CountICE.current <= 3
       ) {
         const candidate = data; //payload.candidate;
         const iceCandidate = new RTCIceCandidate(candidate);
@@ -95,6 +106,24 @@ export default function Page() {
           });
       } else if (type === "connected") {
         idUserWebSocket.current = idUser;
+      } else if (
+        type === "re_offer" &&
+        PeerConnection.current &&
+        data["receiver"] == idUserWebSocket.current
+      ) {
+        const offerSdp = data["sdp"]; //payload.sdp;
+        console.log("ME HA LLEGADO UNA RENEGOCIACION");
+
+        PeerConnection.current.setRemoteDescription(
+          new RTCSessionDescription(offerSdp)
+        );
+
+        const answerSdp = await PeerConnection.current.createAnswer();
+        await PeerConnection.current.setLocalDescription(answerSdp);
+
+        socket.current?.send(
+          JSON.stringify({ type: "renegotiation_answer", sdp: answerSdp })
+        );
       }
     });
 
@@ -129,24 +158,12 @@ export default function Page() {
     peerConnection: RTCPeerConnection,
     stream: MediaStream | undefined
   ) => {
-    // console.log("Agregar", stream);
     if (stream) {
       stream.getTracks().forEach((track) => {
-        peerConnection.addTrack(track, stream);
+        peerConnection.addTransceiver(track, {
+          streams: [stream],
+        });
       });
-
-      // Verificar si el MediaStream se agregó correctamente
-      // const senders = peerConnection.getSenders();
-      // const isStreamAdded = senders.some(
-      //   (sender) =>
-      //     sender.track && sender.track.kind === stream.getTracks()[0].kind
-      // );
-
-      // if (isStreamAdded) {
-      //   // console.log("Agregué correctamente el MediaStream a WebRTC", stream);
-      // } else {
-      //   console.log("Error al agregar el MediaStream a WebRTC");
-      // }
     }
   };
 
@@ -158,7 +175,9 @@ export default function Page() {
   };
 
   const handleStartCall = async () => {
+    console.log('me ejecute fuera')
     if (localStream && PeerConnection.current) {
+      console.log('me ejecute dentro')
       addTracksToLocalConnection(PeerConnection.current, localStream);
       const offerSdp = await PeerConnection.current.createOffer();
       await controlDescriptionLocal(PeerConnection.current, offerSdp);
@@ -205,6 +224,10 @@ export default function Page() {
     PeerConnection.current.ontrack = (event) => {
       console.log("------------------------------------------------");
       const receivedStreams = event.streams;
+      const receivedTransceptor = event.transceiver.receiver.track;
+
+      console.log("Trannceptor supuestamente recibido:", receivedTransceptor);
+
       console.log("Lista Recibida:", receivedStreams);
 
       // Clonar el globalStream para tener una copia modificable
@@ -251,6 +274,26 @@ export default function Page() {
 
       // setGlobalStream(updatedStream);
     };
+
+    PeerConnection.current.onnegotiationneeded = (event) => {
+      console.log("ON NEgociation", event);
+    };
+  }
+
+  function styleGrid(size: number, index: number): [string, string] {
+    console.log(size, index);
+    switch (size) {
+      case 1:
+        return ["col-span-4", "h-[88vh]"];
+      case 2:
+        return ["col-span-2", "h-[44vh]"];
+      case 3:
+        return ["col-span-2", "h-[44vh]"];
+      case 4:
+        return ["col-span-2", "h-[44vh]"];
+      default:
+        return ["col-span-1", "h-[22vh]"];
+    }
   }
 
   return (
@@ -323,20 +366,22 @@ export default function Page() {
             openChat ? "col-span-8" : "col-span-10"
           } bg-gradient-to-t from-purple-950/60 to-gray-950 rounded-3xl`}
         >
-          <div>
-            <div className="w-full bg-purple-900 rounded-t-3xl p-2">
-              options
-            </div>
+          <div className="flex-col h-screen">
+            {/*        <div className="w-full bg-purple-900 rounded-t-3xl p-2">options</div>*/}
 
             {/* Participantes */}
-            <div className="grid grid-cols-4 justify-items-center my-4 gap-x-0 gap-y-6">
+            <div className="grid grid-cols-4 justify-items-center my-4 h-[88vh]">
               {globalArrayState.map((person, index) => {
                 // const mediaStream = new MediaStream();
                 // mediaStream.addTrack(person);
+                const [span, height] = styleGrid(
+                  globalArrayState.length,
+                  index
+                );
                 return (
                   <div
                     key={index}
-                    className={`w-full col-span-1 h-[80vh] bg-gray-950 rounded-2xl flex justify-center items-center border border-purple-950/30`}
+                    className={`${span} bg-gray-950 rounded-2xl flex justify-center items-center border border-purple-950/30`}
                   >
                     <video
                       ref={(ref) => {
@@ -344,9 +389,10 @@ export default function Page() {
                           ref.srcObject = person;
                         }
                       }}
-                      className="rounded-2xl"
+                      className={`rounded-2xl w-full ${height}`}
                       autoPlay
                       playsInline
+                      muted
                     />
                   </div>
                 );

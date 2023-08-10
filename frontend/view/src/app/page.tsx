@@ -40,7 +40,7 @@ const HomePage = () => {
 
   return (
     <div className="bg-gray-950">
-      <div className="bg-transparent h-14" />
+      <div className="bg-transparent h-2" />
       <main
         className="py-32 bg-cover bg-center"
         style={{ backgroundImage: "url('/images/home/backiee-196480.jpg')" }}

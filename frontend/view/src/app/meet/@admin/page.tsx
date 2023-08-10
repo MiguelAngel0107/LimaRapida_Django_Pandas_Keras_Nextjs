@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, Fragment, useEffect, useRef } from "react";
-import { Dialog, Transition } from "@headlessui/react";
+import { Dialog, Transition, Popover } from "@headlessui/react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faMicrophone,
@@ -9,8 +9,10 @@ import {
   faVideoSlash,
   faPhoneSlash,
   faMessage,
+  faCircleInfo,
 } from "@fortawesome/free-solid-svg-icons";
 import { APP_URL_WS_BACK } from "@/globals";
+import Link from "next/link";
 
 interface Conexion {
   id: string;
@@ -21,22 +23,14 @@ export default function Page() {
   const [openChat, setOpenChat] = useState(false);
   const [onAudio, setOnAudio] = useState(false);
   const [onVideo, setOnVideo] = useState(false);
+  const [onInfo, setOnInfo] = useState(false);
 
   const socket = useRef<WebSocket>();
   const PeerConnectionRefs = useRef<Conexion[]>([]);
-  const idUserWebSocket = useRef<string>("");
-
-  const globalRef = useRef<MediaStream>();
-  const [globalStream, setGlobalStream] = useState<MediaStream | undefined>(
-    undefined
-  );
+  const idUserWebSocket = useRef<string[]>([]);
 
   const globalArrayMedia = useRef<MediaStream[]>([]);
   const [globalArrayState, setGlobalArrayState] = useState<MediaStream[]>([]);
-
-  useEffect(() => {
-    console.log("ESTADO DEL ARRAY MEDIA STREAM:", globalArrayState);
-  }, [globalArrayState]);
 
   useEffect(() => {
     socket.current = new WebSocket(
@@ -48,7 +42,7 @@ export default function Page() {
       .then((stream) => {
         globalArrayMedia.current.push(stream);
         setGlobalArrayState(globalArrayMedia.current);
-        console.log("ESTE es mi MediaStream LOCAL", stream);
+        // console.log("ESTE es mi MediaStream LOCAL", stream);
       })
       .catch((error) => {
         console.error("Error al acceder a la cámara y el micrófono:", error);
@@ -75,13 +69,11 @@ export default function Page() {
 
       if (type === "offer") {
         const offerSdp = data; //payload.sdp;
-
         const newConnection = new RTCPeerConnection();
 
-        onTrackAlone(newConnection);
-
-        addTracksToLocalConnection(newConnection, globalArrayMedia.current);
         newConnection.setRemoteDescription(new RTCSessionDescription(offerSdp));
+
+        onTrackAlone(newConnection);
 
         const answerSdp = await newConnection.createAnswer();
         await controlDescriptionLocal(newConnection, answerSdp);
@@ -89,6 +81,8 @@ export default function Page() {
         socket.current?.send(
           JSON.stringify({ type: "send_answer", sdp: answerSdp })
         );
+
+        addTracksToLocalConnection(newConnection, globalArrayMedia.current);
 
         newConnection.onicecandidate = (event) => {
           if (event.candidate) {
@@ -109,7 +103,7 @@ export default function Page() {
           RTCconexion: newConnection,
         });
 
-        //console.log(PeerConnectionRefs);
+        reNegotiationRTC(PeerConnectionRefs.current);
       } else if (type === "candidate") {
         const candidate = data; //payload.candidate;
 
@@ -129,7 +123,16 @@ export default function Page() {
             });
         }
       } else if (type === "connected") {
-        idUserWebSocket.current = idUser;
+        idUserWebSocket.current[0] = idUser;
+        idUserWebSocket.current[1] = data.name;
+      } else if (type === "re_answer") {
+        const answerSdp = data["sdp"]; //payload.sdp;
+        const ConexionRef = findConnectionByUserId(idUser);
+        if (ConexionRef) {
+          ConexionRef.RTCconexion.setRemoteDescription(
+            new RTCSessionDescription(answerSdp)
+          );
+        }
       }
     });
 
@@ -145,16 +148,55 @@ export default function Page() {
 
   function onTrackAlone(RTC: RTCPeerConnection) {
     RTC.ontrack = (event) => {
-      console.log("Cambie el estado de los Streams ");
-      console.log("Streams:", event.streams);
-
       const receivedStreams = event.streams;
 
       receivedStreams.forEach((receivedStream) => {
         globalArrayMedia.current?.push(receivedStream);
       });
+
       concatArrayMediaStreamNow(globalArrayMedia, setGlobalArrayState);
     };
+
+    // RTC.onnegotiationneeded = (event) => {
+    //   console.log("ON NEREGOTIATION", event);
+    //   RTC.createOffer()
+    //     .then((offer) => {
+    //       return RTC.setLocalDescription(offer);
+    //     })
+    //     .then(() =>
+    //       socket.current?.send(
+    //         JSON.stringify({
+    //           type: "renegotiation_offer",
+    //           sdp: RTC.localDescription,
+    //           msg: idUser,
+    //         })
+    //       )
+    //     )
+    //     .catch((err) => {
+    //       console.log("ERR:", err);
+    //     });
+    // };
+  }
+
+  function reNegotiationRTC(ConexionesRTC: Conexion[]) {
+    ConexionesRTC.forEach((conexionObj) => {
+      conexionObj.RTCconexion.createOffer()
+        .then((offer) => {
+          return conexionObj.RTCconexion.setLocalDescription(offer);
+        })
+        .then(() =>
+          socket.current?.send(
+            JSON.stringify({
+              type: "renegotiation_offer",
+              sdp: conexionObj.RTCconexion.localDescription,
+              msg: conexionObj.id,
+            })
+          )
+        )
+        .catch((err) => {
+          console.log("ERR:", err);
+        });
+    });
   }
 
   const addTracksToLocalConnection = (
@@ -162,58 +204,47 @@ export default function Page() {
     streams: MediaStream[]
   ) => {
     console.log("--------------------------------------------------------");
-    const mergedMediaStream = new MediaStream();
-
-    console.log("Esta es la Lista que voy a iterar:", streams);
+    console.log(
+      "Esta es la Lista CONEXIONES que voy a iterar:",
+      PeerConnectionRefs.current
+    );
+    console.log("Esta es la Lista MediaStream que voy a iterar:", streams);
 
     const copiaListaMediaStreams = streams.slice();
-    copiaListaMediaStreams.reverse();
 
-    copiaListaMediaStreams.forEach((mediaStream) => {
-      mediaStream.getTracks().forEach((track) => {
-        mergedMediaStream.addTrack(track);
+    if (copiaListaMediaStreams.length > 0) {
+      copiaListaMediaStreams.forEach((mediaStream) => {
+        mediaStream.getTracks().forEach((track) => {
+          peerConnection.addTransceiver(track, {
+            streams: [mediaStream],
+          });
+        });
       });
-      const numTracks = mediaStream.getTracks().length;
-      console.log(
-        `El MediaStream ${mediaStream.id}: tiene ${numTracks} pistas.`
-      );
-    });
 
-    if (mergedMediaStream.getTracks().length > 0) {
-      // copiaListaMediaStreams.forEach((mediaStream) => {
-      //   mediaStream.getTracks().forEach((track) => {
-      //     peerConnection.addTrack(track, mediaStream);
-      //   });
-      // });
-
-      if (copiaListaMediaStreams.length > 1) {
-        console.log("EJECUTE EL IF");
-        console.log(copiaListaMediaStreams);
-        mergedMediaStream.getTracks().forEach((track) => {
-          peerConnection.addTrack(
-            track,
-            copiaListaMediaStreams[0],
-            copiaListaMediaStreams[1]
+      if (PeerConnectionRefs.current.length > 0) {
+        PeerConnectionRefs.current.forEach((Conexion) => {
+          console.log("Conexion:", Conexion);
+          console.log(
+            "RECEPTORES INIT:",
+            Conexion.RTCconexion.getTransceivers()
+          );
+          copiaListaMediaStreams.forEach((mediaStream) => {
+            console.log("mediaStream:", mediaStream);
+            mediaStream.getTracks().forEach((track) => {
+              console.log("track:", track);
+              Conexion.RTCconexion.addTransceiver(track, {
+                streams: [mediaStream],
+              });
+            });
+          });
+          console.log(
+            "RECEPTORES END:",
+            Conexion.RTCconexion.getTransceivers()
           );
         });
-      } else {
-        mergedMediaStream.getTracks().forEach((track) => {
-          peerConnection.addTrack(track, mergedMediaStream);
-        });
       }
-
-      //// Verificar si el MediaStream se agregó correctamente
-      const senders = peerConnection.getSenders();
-      const trackToCheck = mergedMediaStream.getTracks();
-
-      console.log("Estos son los tracks all", trackToCheck);
-
-      senders.some((sender) => {
-        console.log("sender", sender);
-        sender.track &&
-          sender.track.kind === mergedMediaStream.getTracks()[0].kind;
-      });
     }
+
     console.log("--------------------------------------------------------");
   };
 
@@ -234,6 +265,7 @@ export default function Page() {
         );
       }
     );
+
     setState(arraySinDuplicados);
     ref.current = arraySinDuplicados;
 
@@ -278,25 +310,41 @@ export default function Page() {
     return code;
   }
 
+  function styleGrid(size: number, index: number): [string, string] {
+    console.log(size, index);
+    switch (size) {
+      case 1:
+        return ["col-span-4", "h-[88vh]"];
+      case 2:
+        return ["col-span-2", "h-[44vh]"];
+      case 3:
+        return ["col-span-2", "h-[44vh]"];
+      case 4:
+        return ["col-span-2", "h-[44vh]"];
+      default:
+        return ["", ""];
+    }
+  }
+
   return (
     <div className="grid grid-cols-10 gap-4 m-10">
       <div
         className={`${
           openChat ? "col-span-8" : "col-span-10"
-        } bg-gradient-to-t from-purple-950/60 to-gray-950 rounded-3xl`}
+        } bg-gradient-to-y from-purple-950/60 to-gray-950 rounded-3xl`}
       >
-        <div>
-          <div className="w-full bg-purple-900 rounded-t-3xl p-2">options</div>
-
+        <div className="flex-col h-screen">
+          {/*        <div className="w-full bg-purple-900 rounded-t-3xl p-2">options</div>*/}
           {/* Participantes */}
-          <div className="grid grid-cols-4 justify-items-center my-4 gap-x-0 gap-y-6">
+          <div className="grid grid-cols-4 justify-items-center my-4 h-[88vh]">
             {globalArrayState.map((person, index) => {
               // const mediaStream = new MediaStream();
               // mediaStream.addTrack(person);
+              const [span, height] = styleGrid(globalArrayState.length, index);
               return (
                 <div
                   key={index}
-                  className={`w-full col-span-1 h-[80vh] bg-gray-950 rounded-2xl flex justify-center items-center border border-purple-950/30`}
+                  className={`${span} bg-gray-950 rounded-2xl flex justify-center items-center border border-purple-950/30`}
                 >
                   <video
                     ref={(ref) => {
@@ -304,9 +352,10 @@ export default function Page() {
                         ref.srcObject = person;
                       }
                     }}
-                    className="rounded-2xl"
+                    className={`rounded-2xl w-full ${height}`}
                     autoPlay
                     playsInline
+                    muted
                   />
                 </div>
               );
@@ -347,6 +396,22 @@ export default function Page() {
             >
               <FontAwesomeIcon icon={faMessage} />
             </div>
+            <Popover>
+              <Popover.Button>
+                <div className="flex p-2 h-12 w-12 justify-center items-center bg-gray-950 rounded-full hover:bg-purple-950">
+                  <FontAwesomeIcon icon={faCircleInfo} />
+                </div>
+              </Popover.Button>
+              <Popover.Panel className="flex flex-col justify-center text-center absolute -bottom-24 bg-white p-4 rounded-3xl text-black border-2 border-purple-600 ">
+                Este es el link de la Reunion:
+                <Link
+                  href="/reunion"
+                  className="text-purple-600 hover:underline"
+                >
+                  https://www.owndark.com/meet?code={idUserWebSocket.current[1]}
+                </Link>
+              </Popover.Panel>
+            </Popover>
           </div>
         </div>
       </div>
