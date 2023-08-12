@@ -5,11 +5,13 @@ import { useAppSelector, useAppDispatch } from "@/redux/hooks";
 import { get_perfil_user } from "@/redux/slices/actions/perfil";
 import { SubMenu1, SubMenu2 } from "@/components/auth/user/navs";
 import RequestsFriends from "@/components/auth/user/sections/requestsFriends";
+import { load_user } from "@/redux/slices/actions/auth";
 
 export default function Page() {
   const dispatch = useAppDispatch();
 
   useEffect(() => {
+    dispatch(load_user());
     dispatch(get_perfil_user());
   }, []);
 
