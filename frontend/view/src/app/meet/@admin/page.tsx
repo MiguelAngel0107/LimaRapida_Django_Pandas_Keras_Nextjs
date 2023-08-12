@@ -49,7 +49,6 @@ export default function Page() {
       });
 
     return () => {
-      console.log("Me desmonte");
       socket.current?.close();
     };
   }, []);
@@ -252,10 +251,6 @@ export default function Page() {
     ref: React.MutableRefObject<MediaStream[]>,
     setState: React.Dispatch<React.SetStateAction<MediaStream[]>>
   ) {
-    // console.log(
-    //   "Estado de Array MediaStream despues del onTrack y ANTES de la limpieza:",
-    //   ref.current
-    // );
 
     const arraySinDuplicados = ref.current.filter(
       (elemento, indice, arreglo) => {
@@ -268,11 +263,6 @@ export default function Page() {
 
     setState(arraySinDuplicados);
     ref.current = arraySinDuplicados;
-
-    // console.log(
-    //   "Estado de Array MediaStream despues del onTrack y DESPUES de la limpieza:",
-    //   ref.current
-    // );
   }
 
   const controlDescriptionLocal = async (

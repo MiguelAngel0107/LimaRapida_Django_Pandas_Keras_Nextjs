@@ -57,12 +57,12 @@ export default function Page() {
       setTimeout(() => handleStartCall(), 2000);
     }
 
-    return () => {
-      if (code) {
-        localStorage.removeItem("code_meet");
-      }
-      socket.current?.close();
-    };
+    // return () => {
+    //   if (code) {
+    //     localStorage.removeItem("code_meet");
+    //   }
+    //   socket.current?.close();
+    // };
   }, []);
 
   useEffect(() => {
@@ -131,10 +131,10 @@ export default function Page() {
       console.log("WebSocket connection closed");
     });
 
-    return () => {
-      // connections.forEach((connection) => connection.close());
-      // socket.close();
-    };
+    // return () => {
+    //   PeerConnection.current.close();
+    //   socket.current?.close();
+    // };
   }, [isOpen]);
 
   useEffect(() => {
@@ -148,11 +148,6 @@ export default function Page() {
     setTimeout(() => handleStartCall(), 2000);
     setIsOpen(false);
   }
-
-  const handleInputChange = (event: any) => {
-    const newValue = event.target.value.toUpperCase();
-    setTicketCode(newValue);
-  };
 
   const addTracksToLocalConnection = (
     peerConnection: RTCPeerConnection,
@@ -175,9 +170,7 @@ export default function Page() {
   };
 
   const handleStartCall = async () => {
-    console.log('me ejecute fuera')
     if (localStream && PeerConnection.current) {
-      console.log('me ejecute dentro')
       addTracksToLocalConnection(PeerConnection.current, localStream);
       const offerSdp = await PeerConnection.current.createOffer();
       await controlDescriptionLocal(PeerConnection.current, offerSdp);
@@ -224,15 +217,6 @@ export default function Page() {
     PeerConnection.current.ontrack = (event) => {
       console.log("------------------------------------------------");
       const receivedStreams = event.streams;
-      const receivedTransceptor = event.transceiver.receiver.track;
-
-      console.log("Trannceptor supuestamente recibido:", receivedTransceptor);
-
-      console.log("Lista Recibida:", receivedStreams);
-
-      // Clonar el globalStream para tener una copia modificable
-      // console.log("Stream Antiguo:", globalStream);
-
       receivedStreams.forEach((receivedStream) => {
         globalArrayMedia.current?.push(receivedStream);
         console.log(
@@ -243,40 +227,28 @@ export default function Page() {
         );
       });
       concatArrayMediaStreamNow(globalArrayMedia, setGlobalArrayState);
-
-      // const updatedStream = globalStream
-      //   ? globalStream.clone()
-      //   : new MediaStream();
-
-      // receivedStreams.forEach((receivedStream) => {
-      //   console.log("MediaStream Recibido", receivedStream);
-      //   console.log(
-      //     "Numero de Tracks recibidos:",
-      //     receivedStream.getTracks().length
-      //   );
-
-      //   // Obtener las pistas individuales de audio y video
-      //   const audioTracks = receivedStream.getAudioTracks();
-      //   const videoTracks = receivedStream.getVideoTracks();
-
-      //   audioTracks.forEach((audioTrack) => {
-      //     //console.log('Tracks Recibidos Audio:', audioTrack)
-      //     updatedStream.addTrack(audioTrack);
-      //   });
-
-      //   videoTracks.forEach((videoTrack) => {
-      //     //console.log('Tracks Recibidos Audio:', videoTrack)
-      //     updatedStream.addTrack(videoTrack);
-      //   });
-      // });
-
       console.log("------------------------------------------------");
-
-      // setGlobalStream(updatedStream);
     };
 
     PeerConnection.current.onnegotiationneeded = (event) => {
       console.log("ON NEgociation", event);
+      PeerConnection.current
+        .createOffer()
+        .then((offer) => {
+          return PeerConnection.current.setLocalDescription(offer);
+        })
+        .then(() =>
+          socket.current?.send(
+            JSON.stringify({
+              type: "renegotiation_offer",
+              sdp: PeerConnection.current.localDescription,
+              msg: idUserWebSocket,
+            })
+          )
+        )
+        .catch((err) => {
+          console.log("ERR:", err);
+        });
     };
   }
 
@@ -295,6 +267,11 @@ export default function Page() {
         return ["col-span-1", "h-[22vh]"];
     }
   }
+
+  const handleInputChange = (event: any) => {
+    const newValue = event.target.value.toUpperCase();
+    setTicketCode(newValue);
+  };
 
   return (
     <>

@@ -4,6 +4,7 @@ import NavBar from "@/components/navigation/navBar";
 import Footer from "@/components/navigation/footer";
 import Alert from "@/components/alert/alert";
 import { Providers } from "@/redux/provider";
+import Script from "next/script";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -19,6 +20,22 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <Script
+        strategy="afterInteractive"
+        src="https://www.googletagmanager.com/gtag/js?id=G-8NJ5Z0LCJV"
+      />
+      <Script
+        id="google-analytics"
+        strategy="afterInteractive"
+        dangerouslySetInnerHTML={{
+          __html: `
+          window.dataLayer = window.dataLayer || []; function gtag()
+          {dataLayer.push(arguments)}
+          gtag('js', new Date()); gtag('config', 'G-8NJ5Z0LCJV');
+                `,
+        }}
+      />
+
       <body className={`${inter.className} bg-gray-950`}>
         <Providers>
           <NavBar />
