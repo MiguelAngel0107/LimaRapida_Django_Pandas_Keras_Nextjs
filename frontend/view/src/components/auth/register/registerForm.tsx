@@ -45,10 +45,7 @@ const RegisterForm: React.FC = () => {
       <div className="bg-gradient-to-t from-purple-950/60 to-gray-950 w-full max-w-md p-6 rounded-3xl shadow-md">
         <form onSubmit={(e) => onSubmit(e)} className="text-white">
           <div className="mb-4">
-            <label
-              className="block font-bold mb-2"
-              htmlFor="full name"
-            >
+            <label className="block font-bold mb-2" htmlFor="full name">
               Full name
             </label>
             <input
@@ -61,10 +58,7 @@ const RegisterForm: React.FC = () => {
             />
           </div>
           <div className="mb-4">
-            <label
-              className="block  font-bold mb-2"
-              htmlFor="email"
-            >
+            <label className="block  font-bold mb-2" htmlFor="email">
               Email
             </label>
             <input
@@ -76,10 +70,7 @@ const RegisterForm: React.FC = () => {
             />
           </div>
           <div className="mb-2">
-            <label
-              className="block  font-bold mb-2"
-              htmlFor="password"
-            >
+            <label className="block  font-bold mb-2" htmlFor="password">
               Password
             </label>
             <input
@@ -109,7 +100,7 @@ const RegisterForm: React.FC = () => {
           </div>
 
           <button className="w-full py-2 mt-6 bg-violet-600 text-white font-semibold rounded-md hover:bg-violet-800 transition duration-300">
-            Create Account
+            Create Account{" "}
           </button>
         </form>
         <ButtonGroup /> {/* <ButtonGroup setWeb3={setWeb3}/> */}
