@@ -6,6 +6,7 @@ import { useEffect } from "react";
 
 const HomePage = () => {
   useEffect(() => {
+    get_ip()
     // Captura el evento de desplazamiento y actualiza la posición del fondo
     const parallaxContainer: HTMLElement | null =
       document.getElementById("parallax-container");
@@ -28,15 +29,14 @@ const HomePage = () => {
     { id: 2, name: "Assets under holding", value: "$119 trillion" },
     { id: 3, name: "New users annually", value: "46,000" },
   ];
-  const people = [
-    {
-      name: "Leslie Alexander",
-      role: "Co-Founder / CEO",
-      imageUrl:
-        "https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-    },
-    // More people...
-  ];
+
+  const get_ip = () => {
+    fetch("http://ip-api.com/json/?fields=61439")
+      .then((res) => res.json())
+      .then((res) => {
+        console.log(res)
+      });
+  };
 
   return (
     <div className="bg-gray-950">
