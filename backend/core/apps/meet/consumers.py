@@ -211,6 +211,7 @@ class VideoCallConsumerTesting(AsyncWebsocketConsumer):
                 {
                     'type': 'forward_renegotiation_answer',
                     'sdp': sdp,
+                    'receiver': msg_client,
                     'sender_channel_name': self.channel_name
                 }
             )
@@ -272,11 +273,13 @@ class VideoCallConsumerTesting(AsyncWebsocketConsumer):
     async def forward_renegotiation_answer(self, event):
         # Enviar la respuesta recibida a todos los miembros del grupo de la sala (excepto al remitente original)
         sdp = event['sdp']
+        receiver = event['receiver']
         sender_channel_name = event['sender_channel_name']
 
         if self.channel_name != sender_channel_name:
             await self.send(text_data=json.dumps({
                 'type': 're_answer',
                 'sdp': sdp,
+                'receiver': receiver,
                 'idUser': sender_channel_name
             }))
