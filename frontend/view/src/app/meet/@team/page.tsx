@@ -86,10 +86,7 @@ export default function Page() {
         PeerConnection.current.setRemoteDescription(
           new RTCSessionDescription(answerSdp)
         );
-      } else if (
-        type === "candidate" &&
-        PeerConnection.current
-      ) {
+      } else if (type === "candidate" && PeerConnection.current) {
         const candidate = data; //payload.candidate;
         const iceCandidate = new RTCIceCandidate(candidate);
         PeerConnection.current
@@ -158,7 +155,7 @@ export default function Page() {
       stream.getTracks().forEach((track) => {
         peerConnection.addTransceiver(track, {
           streams: [stream],
-          direction: "sendrecv",
+          direction: "sendonly",
         });
       });
     }
@@ -270,10 +267,8 @@ export default function Page() {
         );
       }
     );
-    setState(ref.current);
+    setState(arraySinDuplicados);
     ref.current = arraySinDuplicados;
-
-    //console.log("Lista Actual de Videos:", ref.current, globalArrayState);
   }
 
   function reNegotiationRTC(peerConection: RTCPeerConnection) {
@@ -316,10 +311,13 @@ export default function Page() {
 
     PeerConnection.current.ontrack = (event) => {
       console.log("------------------------------------------------");
+      console.log("Receiver Track", event.receiver);
+      console.log("tRANCEPTOR Track", event.transceiver);
       const receivedStreams = event.streams;
 
       receivedStreams.forEach((receivedStream) => {
-        // console.log(receivedStream);
+        console.log("Añadi un elemento");
+        console.log(receivedStream);
         globalArrayMedia.current.push(receivedStream);
       });
       concatArrayMediaStreamNow(globalArrayMedia, setGlobalArrayState);
@@ -437,7 +435,19 @@ export default function Page() {
                   >
                     <video
                       ref={(ref) => {
-                        if (ref) {
+                        if (ref && index == 0) {
+                          const clonedStream = new MediaStream();
+                          person.getTracks().forEach((track) => {
+                            clonedStream.addTrack(track.clone());
+                          });
+                          const audioTracks = clonedStream.getAudioTracks();
+
+                          if (audioTracks.length > 0) {
+                            const trackToRemove = audioTracks[0];
+                            clonedStream.removeTrack(trackToRemove);
+                          }
+                          ref.srcObject = clonedStream;
+                        } else if (ref) {
                           ref.srcObject = person;
                         }
                       }}
@@ -492,6 +502,15 @@ export default function Page() {
                 className="flex p-2 h-12 w-12 justify-center items-center bg-gray-950 rounded-full hover:bg-purple-950"
               >
                 GET
+              </div>
+              <div
+                onClick={() => {
+                  console.log("List Array Ref:", globalArrayMedia.current);
+                  console.log("List Array State:", globalArrayState);
+                }}
+                className="flex p-2 h-12 w-12 justify-center items-center bg-gray-950 rounded-full hover:bg-purple-950"
+              >
+                STATE
               </div>
             </div>
           </div>

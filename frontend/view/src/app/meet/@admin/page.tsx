@@ -217,6 +217,7 @@ export default function Page() {
 
     if (ListaMediaStreams.length > 0) {
       // Actualiza a solo a la conexion que hace el pedido de informacion.
+      console.log("Receivers Existentes:", peerConnection.getTransceivers());
       ListaMediaStreams.forEach((mediaStream) => {
         if (mediaStream.id != idRequest) {
           mediaStream.mediaStream.getTracks().forEach((track) => {
@@ -233,11 +234,14 @@ export default function Page() {
         PeerConnectionRefs.current.forEach((Conexion) => {
           console.log("Conexion:", Conexion);
           if (Conexion.id != idRequest) {
-            ListaMediaStreams.forEach((mediaStream) => {
-              mediaStream.mediaStream.getTracks().forEach((track) => {
-                Conexion.RTCconexion.addTransceiver(track, {
-                  streams: [mediaStream.mediaStream],
-                });
+            // Se excluye la conexion que hice que esta funcion se activara
+
+            const ultimoMediaStream =
+              ListaMediaStreams[ListaMediaStreams.length - 1];
+
+            ultimoMediaStream.mediaStream.getTracks().forEach((track) => {
+              Conexion.RTCconexion.addTransceiver(track, {
+                streams: [ultimoMediaStream.mediaStream],
               });
             });
           }
@@ -274,7 +278,9 @@ export default function Page() {
       PeerConnectionRefs.current.forEach((peerConectionObj) => {
         const audioTransceiver =
           peerConectionObj.RTCconexion.getTransceivers().find(
-            (transceiver) => transceiver.sender.track?.kind === "audio"
+            (transceiver) =>
+              transceiver.sender.track?.kind === "audio" &&
+              (transceiver.mid == "2" || transceiver.mid == "3")
           );
 
         if (audioTransceiver) {
@@ -284,15 +290,16 @@ export default function Page() {
             audioTrack.enabled = false; // o true para desmutear
           }
         }
-        setOnAudio((onAudio) => !onAudio);
       });
-
+      setOnAudio((onAudio) => !onAudio);
       reNegotiationRTC(PeerConnectionRefs.current);
     } else {
       PeerConnectionRefs.current.forEach((peerConectionObj) => {
         const audioTransceiver =
           peerConectionObj.RTCconexion.getTransceivers().find(
-            (transceiver) => transceiver.sender.track?.kind === "audio"
+            (transceiver) =>
+              transceiver.sender.track?.kind === "audio" &&
+              (transceiver.mid == "2" || transceiver.mid == "3")
           );
 
         if (audioTransceiver) {
@@ -302,8 +309,60 @@ export default function Page() {
             audioTrack.enabled = true; // o true para desmutear
           }
         }
-        setOnAudio((onAudio) => !onAudio);
       });
+      setOnAudio((onAudio) => !onAudio);
+      reNegotiationRTC(PeerConnectionRefs.current);
+    }
+  }
+
+  function setVideoRTC() {
+    if (onVideo && PeerConnectionRefs.current) {
+      PeerConnectionRefs.current.forEach((peerConectionObj) => {
+        const videoTransceiver =
+          peerConectionObj.RTCconexion.getTransceivers().find(
+            (transceiver) =>
+              transceiver.sender.track?.kind === "video" &&
+              (transceiver.mid == "2" || transceiver.mid == "3")
+          );
+
+        if (videoTransceiver) {
+          const videoTrack = videoTransceiver.sender.track;
+          console.log(
+            "tranceptor encontrado:",
+            videoTransceiver,
+            "Track encontrado:",
+            videoTrack
+          );
+          if (videoTrack) {
+            videoTrack.enabled = false;
+          }
+        }
+      });
+      setOnVideo((onVideo) => !onVideo);
+      reNegotiationRTC(PeerConnectionRefs.current);
+    } else {
+      PeerConnectionRefs.current.forEach((peerConectionObj) => {
+        const videoTransceiver =
+          peerConectionObj.RTCconexion.getTransceivers().find(
+            (transceiver) =>
+              transceiver.sender.track?.kind === "video" &&
+              (transceiver.mid == "2" || transceiver.mid == "3")
+          );
+
+        if (videoTransceiver) {
+          const videoTrack = videoTransceiver.sender.track;
+          console.log(
+            "tranceptor encontrado:",
+            videoTransceiver,
+            "Track encontrado:",
+            videoTrack
+          );
+          if (videoTrack) {
+            videoTrack.enabled = true;
+          }
+        }
+      });
+      setOnVideo((onVideo) => !onVideo);
       reNegotiationRTC(PeerConnectionRefs.current);
     }
   }
@@ -443,7 +502,7 @@ export default function Page() {
             </div>
 
             <div
-              onClick={() => setOnVideo((onVideo) => !onVideo)}
+              onClick={() => setVideoRTC()}
               className="flex p-2 h-12 w-12 justify-center items-center bg-gray-950 rounded-full hover:bg-purple-950"
             >
               {onVideo ? (

@@ -2,7 +2,7 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 import json
 
 
-class VideoCallConsumer(AsyncWebsocketConsumer):
+class VideoCallConsumerChat(AsyncWebsocketConsumer):
     async def connect(self):
         # Obtén el nombre de la sala desde los parámetros de la URL (por ejemplo, ws://localhost:8000/ws/call/sala1/)
         self.room_name = self.scope['url_route']['kwargs']['room_name']
@@ -118,7 +118,7 @@ class VideoCallConsumer(AsyncWebsocketConsumer):
             }))
 
 
-class VideoCallConsumerTesting(AsyncWebsocketConsumer):
+class VideoCallConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         # Obtén el nombre de la sala desde los parámetros de la URL (por ejemplo, ws://localhost:8000/ws/call/sala1/)
         self.room_name = self.scope['url_route']['kwargs']['room_name']
