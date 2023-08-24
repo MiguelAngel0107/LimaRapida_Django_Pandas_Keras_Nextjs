@@ -18,11 +18,15 @@ interface Conexion {
   id: string;
   RTCconexion: RTCPeerConnection;
 }
+interface ListStreams {
+  id: string;
+  mediaStream: MediaStream;
+}
 
 export default function Page() {
   const [openChat, setOpenChat] = useState(false);
-  const [onAudio, setOnAudio] = useState(false);
-  const [onVideo, setOnVideo] = useState(false);
+  const [onAudio, setOnAudio] = useState(true);
+  const [onVideo, setOnVideo] = useState(true);
   const [onInfo, setOnInfo] = useState(false);
 
   const socket = useRef<WebSocket>();
@@ -30,6 +34,10 @@ export default function Page() {
   const idUserWebSocket = useRef<string[]>([]);
 
   const globalArrayMedia = useRef<MediaStream[]>([]);
+  const listMediaStream = useRef<ListStreams[]>([]);
+  const [listMediaStreamState, setlistMediaStreamState] = useState<
+    ListStreams[]
+  >([]);
   const [globalArrayState, setGlobalArrayState] = useState<MediaStream[]>([]);
 
   useEffect(() => {
@@ -40,16 +48,14 @@ export default function Page() {
     navigator.mediaDevices
       .getUserMedia({ video: true, audio: true })
       .then((stream) => {
-        globalArrayMedia.current.push(stream);
-        setGlobalArrayState(globalArrayMedia.current);
-        // console.log("ESTE es mi MediaStream LOCAL", stream);
+        listMediaStream.current.push({ id: "host", mediaStream: stream });
+        setlistMediaStreamState(listMediaStream.current);
       })
       .catch((error) => {
         console.error("Error al acceder a la cámara y el micrófono:", error);
       });
 
     return () => {
-      console.log("Me desmonte");
       socket.current?.close();
     };
   }, []);
@@ -73,7 +79,7 @@ export default function Page() {
 
         newConnection.setRemoteDescription(new RTCSessionDescription(offerSdp));
 
-        onTrackAlone(newConnection);
+        onTrackAlone(newConnection, idUser);
 
         const answerSdp = await newConnection.createAnswer();
         await controlDescriptionLocal(newConnection, answerSdp);
@@ -82,7 +88,11 @@ export default function Page() {
           JSON.stringify({ type: "send_answer", sdp: answerSdp })
         );
 
-        addTracksToLocalConnection(newConnection, globalArrayMedia.current);
+        addTracksToLocalConnection(
+          newConnection,
+          listMediaStream.current,
+          idUser
+        );
 
         newConnection.onicecandidate = (event) => {
           if (event.candidate) {
@@ -106,9 +116,7 @@ export default function Page() {
         reNegotiationRTC(PeerConnectionRefs.current);
       } else if (type === "candidate") {
         const candidate = data; //payload.candidate;
-
         const ConexionRef = findConnectionByUserId(idUser);
-
         const iceCandidate = new RTCIceCandidate(candidate);
 
         if (ConexionRef) {
@@ -133,6 +141,25 @@ export default function Page() {
             new RTCSessionDescription(answerSdp)
           );
         }
+      } else if (type === "re_offer") {
+        const offerSdp = data["sdp"]; //payload.sdp;
+        const ConexionRef = findConnectionByUserId(idUser);
+        if (ConexionRef) {
+          ConexionRef.RTCconexion.setRemoteDescription(
+            new RTCSessionDescription(offerSdp)
+          );
+          onTrackAlone(ConexionRef.RTCconexion, idUser);
+          const answerSdp = await ConexionRef.RTCconexion.createAnswer();
+          await ConexionRef.RTCconexion.setLocalDescription(answerSdp);
+
+          socket.current?.send(
+            JSON.stringify({
+              type: "renegotiation_answer",
+              sdp: answerSdp,
+              msg: idUser,
+            })
+          );
+        }
       }
     });
 
@@ -142,41 +169,88 @@ export default function Page() {
 
     return () => {
       // connections.forEach((connection) => connection.close());
-      // socket.close();
     };
   }, []);
 
-  function onTrackAlone(RTC: RTCPeerConnection) {
+  function onTrackAlone(RTC: RTCPeerConnection, idSender: string) {
     RTC.ontrack = (event) => {
       const receivedStreams = event.streams;
 
+      // Verificar si ya existe un objeto con el mismo id
+      const index = listMediaStream.current.findIndex(
+        (item) => item.id === idSender
+      );
+
       receivedStreams.forEach((receivedStream) => {
+        if (index !== -1) {
+          listMediaStream.current[index] = {
+            id: idSender,
+            mediaStream: receivedStream,
+          };
+          console.log("Se modifico uno existente");
+        } else {
+          listMediaStream.current.push({
+            id: idSender,
+            mediaStream: receivedStream,
+          });
+          console.log("Se agrego nuevo media");
+        }
         globalArrayMedia.current?.push(receivedStream);
       });
 
       concatArrayMediaStreamNow(globalArrayMedia, setGlobalArrayState);
     };
-
-    // RTC.onnegotiationneeded = (event) => {
-    //   console.log("ON NEREGOTIATION", event);
-    //   RTC.createOffer()
-    //     .then((offer) => {
-    //       return RTC.setLocalDescription(offer);
-    //     })
-    //     .then(() =>
-    //       socket.current?.send(
-    //         JSON.stringify({
-    //           type: "renegotiation_offer",
-    //           sdp: RTC.localDescription,
-    //           msg: idUser,
-    //         })
-    //       )
-    //     )
-    //     .catch((err) => {
-    //       console.log("ERR:", err);
-    //     });
-    // };
   }
+
+  const addTracksToLocalConnection = (
+    peerConnection: RTCPeerConnection,
+    streams: ListStreams[],
+    idRequest: string
+  ) => {
+    // Esta funcion solo se ejecuta cuando se hace una actualizacion
+    // de los estados de los participantes
+
+    console.log("--------------------------------------------------------");
+    console.log("Esta es la Lista MediaStream que voy a iterar:", streams);
+
+    const ListaMediaStreams = streams.slice();
+
+    if (ListaMediaStreams.length > 0) {
+      // Actualiza a solo a la conexion que hace el pedido de informacion.
+      console.log("Receivers Existentes:", peerConnection.getTransceivers());
+      ListaMediaStreams.forEach((mediaStream) => {
+        if (mediaStream.id != idRequest) {
+          mediaStream.mediaStream.getTracks().forEach((track) => {
+            peerConnection.addTransceiver(track, {
+              streams: [mediaStream.mediaStream],
+              direction: "sendonly",
+            });
+          });
+        }
+      });
+
+      // Actualiza cada Tranceptor de las conexiones existentes, excepto la que hace el pedido.
+      if (PeerConnectionRefs.current.length > 0) {
+        PeerConnectionRefs.current.forEach((Conexion) => {
+          console.log("Conexion:", Conexion);
+          if (Conexion.id != idRequest) {
+            // Se excluye la conexion que hice que esta funcion se activara
+
+            const ultimoMediaStream =
+              ListaMediaStreams[ListaMediaStreams.length - 1];
+
+            ultimoMediaStream.mediaStream.getTracks().forEach((track) => {
+              Conexion.RTCconexion.addTransceiver(track, {
+                streams: [ultimoMediaStream.mediaStream],
+              });
+            });
+          }
+        });
+      }
+    }
+
+    console.log("--------------------------------------------------------");
+  };
 
   function reNegotiationRTC(ConexionesRTC: Conexion[]) {
     ConexionesRTC.forEach((conexionObj) => {
@@ -199,64 +273,104 @@ export default function Page() {
     });
   }
 
-  const addTracksToLocalConnection = (
-    peerConnection: RTCPeerConnection,
-    streams: MediaStream[]
-  ) => {
-    console.log("--------------------------------------------------------");
-    console.log(
-      "Esta es la Lista CONEXIONES que voy a iterar:",
-      PeerConnectionRefs.current
-    );
-    console.log("Esta es la Lista MediaStream que voy a iterar:", streams);
+  function setAudioRTC() {
+    if (onAudio && PeerConnectionRefs.current) {
+      PeerConnectionRefs.current.forEach((peerConectionObj) => {
+        const audioTransceiver =
+          peerConectionObj.RTCconexion.getTransceivers().find(
+            (transceiver) =>
+              transceiver.sender.track?.kind === "audio" &&
+              (transceiver.mid == "2" || transceiver.mid == "3")
+          );
 
-    const copiaListaMediaStreams = streams.slice();
+        if (audioTransceiver) {
+          const audioTrack = audioTransceiver.sender.track;
 
-    if (copiaListaMediaStreams.length > 0) {
-      copiaListaMediaStreams.forEach((mediaStream) => {
-        mediaStream.getTracks().forEach((track) => {
-          peerConnection.addTransceiver(track, {
-            streams: [mediaStream],
-          });
-        });
+          if (audioTrack) {
+            audioTrack.enabled = false; // o true para desmutear
+          }
+        }
       });
+      setOnAudio((onAudio) => !onAudio);
+      reNegotiationRTC(PeerConnectionRefs.current);
+    } else {
+      PeerConnectionRefs.current.forEach((peerConectionObj) => {
+        const audioTransceiver =
+          peerConectionObj.RTCconexion.getTransceivers().find(
+            (transceiver) =>
+              transceiver.sender.track?.kind === "audio" &&
+              (transceiver.mid == "2" || transceiver.mid == "3")
+          );
 
-      if (PeerConnectionRefs.current.length > 0) {
-        PeerConnectionRefs.current.forEach((Conexion) => {
-          console.log("Conexion:", Conexion);
-          console.log(
-            "RECEPTORES INIT:",
-            Conexion.RTCconexion.getTransceivers()
-          );
-          copiaListaMediaStreams.forEach((mediaStream) => {
-            console.log("mediaStream:", mediaStream);
-            mediaStream.getTracks().forEach((track) => {
-              console.log("track:", track);
-              Conexion.RTCconexion.addTransceiver(track, {
-                streams: [mediaStream],
-              });
-            });
-          });
-          console.log(
-            "RECEPTORES END:",
-            Conexion.RTCconexion.getTransceivers()
-          );
-        });
-      }
+        if (audioTransceiver) {
+          const audioTrack = audioTransceiver.sender.track;
+
+          if (audioTrack) {
+            audioTrack.enabled = true; // o true para desmutear
+          }
+        }
+      });
+      setOnAudio((onAudio) => !onAudio);
+      reNegotiationRTC(PeerConnectionRefs.current);
     }
+  }
 
-    console.log("--------------------------------------------------------");
-  };
+  function setVideoRTC() {
+    if (onVideo && PeerConnectionRefs.current) {
+      PeerConnectionRefs.current.forEach((peerConectionObj) => {
+        const videoTransceiver =
+          peerConectionObj.RTCconexion.getTransceivers().find(
+            (transceiver) =>
+              transceiver.sender.track?.kind === "video" &&
+              (transceiver.mid == "2" || transceiver.mid == "3")
+          );
+
+        if (videoTransceiver) {
+          const videoTrack = videoTransceiver.sender.track;
+          console.log(
+            "tranceptor encontrado:",
+            videoTransceiver,
+            "Track encontrado:",
+            videoTrack
+          );
+          if (videoTrack) {
+            videoTrack.enabled = false;
+          }
+        }
+      });
+      setOnVideo((onVideo) => !onVideo);
+      reNegotiationRTC(PeerConnectionRefs.current);
+    } else {
+      PeerConnectionRefs.current.forEach((peerConectionObj) => {
+        const videoTransceiver =
+          peerConectionObj.RTCconexion.getTransceivers().find(
+            (transceiver) =>
+              transceiver.sender.track?.kind === "video" &&
+              (transceiver.mid == "2" || transceiver.mid == "3")
+          );
+
+        if (videoTransceiver) {
+          const videoTrack = videoTransceiver.sender.track;
+          console.log(
+            "tranceptor encontrado:",
+            videoTransceiver,
+            "Track encontrado:",
+            videoTrack
+          );
+          if (videoTrack) {
+            videoTrack.enabled = true;
+          }
+        }
+      });
+      setOnVideo((onVideo) => !onVideo);
+      reNegotiationRTC(PeerConnectionRefs.current);
+    }
+  }
 
   function concatArrayMediaStreamNow(
     ref: React.MutableRefObject<MediaStream[]>,
     setState: React.Dispatch<React.SetStateAction<MediaStream[]>>
   ) {
-    // console.log(
-    //   "Estado de Array MediaStream despues del onTrack y ANTES de la limpieza:",
-    //   ref.current
-    // );
-
     const arraySinDuplicados = ref.current.filter(
       (elemento, indice, arreglo) => {
         return (
@@ -269,10 +383,7 @@ export default function Page() {
     setState(arraySinDuplicados);
     ref.current = arraySinDuplicados;
 
-    // console.log(
-    //   "Estado de Array MediaStream despues del onTrack y DESPUES de la limpieza:",
-    //   ref.current
-    // );
+    setlistMediaStreamState(listMediaStream.current);
   }
 
   const controlDescriptionLocal = async (
@@ -311,7 +422,7 @@ export default function Page() {
   }
 
   function styleGrid(size: number, index: number): [string, string] {
-    console.log(size, index);
+    //console.log(size, index);
     switch (size) {
       case 1:
         return ["col-span-4", "h-[88vh]"];
@@ -337,10 +448,13 @@ export default function Page() {
           {/*        <div className="w-full bg-purple-900 rounded-t-3xl p-2">options</div>*/}
           {/* Participantes */}
           <div className="grid grid-cols-4 justify-items-center my-4 h-[88vh]">
-            {globalArrayState.map((person, index) => {
+            {listMediaStreamState.map((person, index) => {
               // const mediaStream = new MediaStream();
               // mediaStream.addTrack(person);
-              const [span, height] = styleGrid(globalArrayState.length, index);
+              const [span, height] = styleGrid(
+                listMediaStreamState.length,
+                index
+              );
               return (
                 <div
                   key={index}
@@ -348,14 +462,26 @@ export default function Page() {
                 >
                   <video
                     ref={(ref) => {
-                      if (ref) {
-                        ref.srcObject = person;
+                      if (ref && person.id == "host") {
+                        const clonedStream = new MediaStream();
+                        person.mediaStream.getTracks().forEach((track) => {
+                          clonedStream.addTrack(track.clone());
+                        });
+
+                        const audioTracks = clonedStream.getAudioTracks();
+
+                        if (audioTracks.length > 0) {
+                          const trackToRemove = audioTracks[0];
+                          clonedStream.removeTrack(trackToRemove);
+                        }
+                        ref.srcObject = clonedStream; //person.mediaStream;
+                      } else if (ref) {
+                        ref.srcObject = person.mediaStream;
                       }
                     }}
                     className={`rounded-2xl w-full ${height}`}
                     autoPlay
                     playsInline
-                    muted
                   />
                 </div>
               );
@@ -365,7 +491,7 @@ export default function Page() {
           {/* Controls */}
           <div className="flex justify-center gap-4 p-2">
             <div
-              onClick={() => setOnAudio((onAudio) => !onAudio)}
+              onClick={() => setAudioRTC()}
               className="flex p-2 h-12 w-12 justify-center items-center bg-gray-950 rounded-full hover:bg-purple-950"
             >
               {onAudio ? (
@@ -376,7 +502,7 @@ export default function Page() {
             </div>
 
             <div
-              onClick={() => setOnVideo((onVideo) => !onVideo)}
+              onClick={() => setVideoRTC()}
               className="flex p-2 h-12 w-12 justify-center items-center bg-gray-950 rounded-full hover:bg-purple-950"
             >
               {onVideo ? (
@@ -395,6 +521,26 @@ export default function Page() {
               className="flex p-2 h-12 w-12 justify-center items-center bg-gray-950 rounded-full hover:bg-purple-950"
             >
               <FontAwesomeIcon icon={faMessage} />
+            </div>
+
+            <div
+              onClick={() => {
+                PeerConnectionRefs.current.forEach((conexion) => {
+                  console.log(conexion.RTCconexion.getTransceivers());
+                });
+              }}
+              className="flex p-2 h-12 w-12 justify-center items-center bg-gray-950 rounded-full hover:bg-purple-950"
+            >
+              GET
+            </div>
+
+            <div
+              onClick={() => {
+                console.log("List Array :", listMediaStream.current);
+              }}
+              className="flex p-2 h-12 w-12 justify-center items-center bg-gray-950 rounded-full hover:bg-purple-950"
+            >
+              STATE
             </div>
             <Popover>
               <Popover.Button>

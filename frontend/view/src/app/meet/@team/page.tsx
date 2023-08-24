@@ -15,8 +15,8 @@ import { APP_URL_WS_BACK } from "@/globals";
 export default function Page() {
   const [openChat, setOpenChat] = useState(false);
   const [isOpen, setIsOpen] = useState(true);
-  const [onAudio, setOnAudio] = useState(false);
-  const [onVideo, setOnVideo] = useState(false);
+  const [onAudio, setOnAudio] = useState(true);
+  const [onVideo, setOnVideo] = useState(true);
 
   const [ticketCode, setTicketCode] = useState("");
   const socket = useRef<WebSocket>();
@@ -24,9 +24,6 @@ export default function Page() {
   const idUserWebSocket = useRef<string>("");
 
   const [localStream, setLocalStream] = useState<MediaStream | undefined>(
-    undefined
-  );
-  const [globalStream, setGlobalStream] = useState<MediaStream | undefined>(
     undefined
   );
   const globalArrayMedia = useRef<MediaStream[]>([]);
@@ -39,7 +36,6 @@ export default function Page() {
       .getUserMedia({ video: true, audio: true })
       .then((stream) => {
         setLocalStream(stream);
-        setGlobalStream(stream);
 
         globalArrayMedia.current.push(stream);
         setGlobalArrayState(globalArrayMedia.current);
@@ -49,6 +45,7 @@ export default function Page() {
       });
 
     const code = localStorage.getItem("code_meet");
+
     if (code) {
       setIsOpen(false);
       socket.current = new WebSocket(
@@ -58,9 +55,10 @@ export default function Page() {
     }
 
     return () => {
-      if (code) {
-        localStorage.removeItem("code_meet");
-      }
+      //   if (code) {
+      //     localStorage.removeItem("code_meet");
+      //   }
+      PeerConnection.current.close();
       socket.current?.close();
     };
   }, []);
@@ -83,15 +81,12 @@ export default function Page() {
         PeerConnection.current &&
         CountICE.current <= 3
       ) {
+        console.log("Entre a Answer");
         const answerSdp = data; //payload.sdp;
         PeerConnection.current.setRemoteDescription(
           new RTCSessionDescription(answerSdp)
         );
-      } else if (
-        type === "candidate" &&
-        PeerConnection.current //&&
-        //CountICE.current <= 3
-      ) {
+      } else if (type === "candidate" && PeerConnection.current) {
         const candidate = data; //payload.candidate;
         const iceCandidate = new RTCIceCandidate(candidate);
         PeerConnection.current
@@ -111,6 +106,7 @@ export default function Page() {
         PeerConnection.current &&
         data["receiver"] == idUserWebSocket.current
       ) {
+        console.log("Entre a ReOffer");
         const offerSdp = data["sdp"]; //payload.sdp;
         console.log("ME HA LLEGADO UNA RENEGOCIACION");
 
@@ -124,22 +120,24 @@ export default function Page() {
         socket.current?.send(
           JSON.stringify({ type: "renegotiation_answer", sdp: answerSdp })
         );
+      } else if (
+        type === "re_answer" &&
+        PeerConnection.current &&
+        data["receiver"] == idUserWebSocket.current
+      ) {
+        console.log("Entre a ReAnswer");
+        const answerSdp = data["sdp"]; //payload.sdp;
+
+        PeerConnection.current.setRemoteDescription(
+          new RTCSessionDescription(answerSdp)
+        );
       }
     });
 
     socket.current?.addEventListener("close", () => {
       console.log("WebSocket connection closed");
     });
-
-    return () => {
-      // connections.forEach((connection) => connection.close());
-      // socket.close();
-    };
   }, [isOpen]);
-
-  useEffect(() => {
-    console.log("Streams Globales:", globalStream);
-  }, [globalStream]);
 
   function closeModal() {
     socket.current = new WebSocket(
@@ -149,11 +147,6 @@ export default function Page() {
     setIsOpen(false);
   }
 
-  const handleInputChange = (event: any) => {
-    const newValue = event.target.value.toUpperCase();
-    setTicketCode(newValue);
-  };
-
   const addTracksToLocalConnection = (
     peerConnection: RTCPeerConnection,
     stream: MediaStream | undefined
@@ -162,10 +155,83 @@ export default function Page() {
       stream.getTracks().forEach((track) => {
         peerConnection.addTransceiver(track, {
           streams: [stream],
+          direction: "sendonly",
         });
       });
     }
   };
+
+  function setAudioRTC() {
+    if (onAudio && PeerConnection.current) {
+      // Suponiendo que 'peerConnection' es tu conexión WebRTC ya establecida
+      const audioTransceiver = PeerConnection.current
+        .getTransceivers()
+        .find((transceiver) => transceiver.sender.track?.kind === "audio");
+
+      if (audioTransceiver) {
+        const audioTrack = audioTransceiver.sender.track;
+
+        if (audioTrack) {
+          audioTrack.enabled = false; // o true para desmutear
+        }
+      }
+      setOnAudio((onAudio) => !onAudio);
+
+      reNegotiationRTC(PeerConnection.current);
+    } else {
+      // Suponiendo que 'peerConnection' es tu conexión WebRTC ya establecida
+      const audioTransceiver = PeerConnection.current
+        .getTransceivers()
+        .find((transceiver) => transceiver.sender.track?.kind === "audio");
+
+      if (audioTransceiver) {
+        const audioTrack = audioTransceiver.sender.track;
+
+        if (audioTrack) {
+          audioTrack.enabled = true; // o true para desmutear
+        }
+      }
+      setOnAudio((onAudio) => !onAudio);
+
+      reNegotiationRTC(PeerConnection.current);
+    }
+  }
+
+  function setVideoRTC() {
+    if (onVideo && PeerConnection.current) {
+      // Suponiendo que 'peerConnection' es tu conexión WebRTC ya establecida
+      const videoTransceiver = PeerConnection.current
+        .getTransceivers()
+        .find((transceiver) => transceiver.sender.track?.kind === "video");
+
+      if (videoTransceiver) {
+        const videoTrack = videoTransceiver.sender.track;
+
+        if (videoTrack) {
+          videoTrack.enabled = false; // o true para desmutear
+        }
+      }
+      setOnVideo((onVideo) => !onVideo);
+
+      reNegotiationRTC(PeerConnection.current);
+    } else {
+      // Suponiendo que 'peerConnection' es tu conexión WebRTC ya establecida
+      const videoTransceiver = PeerConnection.current
+        .getTransceivers()
+        .find((transceiver) => transceiver.sender.track?.kind === "video");
+
+      if (videoTransceiver) {
+        const videoTrack = videoTransceiver.sender.track;
+
+        if (videoTrack) {
+          videoTrack.enabled = true; // o true para desmutear
+        }
+      }
+      setOnVideo((onVideo) => !onVideo);
+
+      reNegotiationRTC(PeerConnection.current);
+    }
+  }
 
   const controlDescriptionLocal = async (
     peerConnection: RTCPeerConnection,
@@ -175,9 +241,7 @@ export default function Page() {
   };
 
   const handleStartCall = async () => {
-    console.log('me ejecute fuera')
     if (localStream && PeerConnection.current) {
-      console.log('me ejecute dentro')
       addTracksToLocalConnection(PeerConnection.current, localStream);
       const offerSdp = await PeerConnection.current.createOffer();
       await controlDescriptionLocal(PeerConnection.current, offerSdp);
@@ -207,6 +271,30 @@ export default function Page() {
     ref.current = arraySinDuplicados;
   }
 
+  function reNegotiationRTC(peerConection: RTCPeerConnection) {
+    // console.log("Entre A la funcion de Renegocicacioon");
+    peerConection
+      .createOffer()
+      .then((offer) => {
+        return peerConection.setLocalDescription(offer);
+      })
+
+      .then(() => {
+        // console.log("Voy a enviar la offerta");
+        // console.log(socket.current);
+        socket.current?.send(
+          JSON.stringify({
+            type: "renegotiation_offer",
+            sdp: peerConection.localDescription,
+            msg: "host",
+          })
+        );
+      })
+      .catch((err) => {
+        console.log("ERR:", err);
+      });
+  }
+
   if (PeerConnection.current) {
     PeerConnection.current.onicecandidate = (event) => {
       if (event.candidate) {
@@ -223,65 +311,22 @@ export default function Page() {
 
     PeerConnection.current.ontrack = (event) => {
       console.log("------------------------------------------------");
+      console.log("Receiver Track", event.receiver);
+      console.log("tRANCEPTOR Track", event.transceiver);
       const receivedStreams = event.streams;
-      const receivedTransceptor = event.transceiver.receiver.track;
-
-      console.log("Trannceptor supuestamente recibido:", receivedTransceptor);
-
-      console.log("Lista Recibida:", receivedStreams);
-
-      // Clonar el globalStream para tener una copia modificable
-      // console.log("Stream Antiguo:", globalStream);
 
       receivedStreams.forEach((receivedStream) => {
-        globalArrayMedia.current?.push(receivedStream);
-        console.log(
-          "El Media Se LLAMA:",
-          receivedStream.id,
-          "y tiene :",
-          receivedStream.getTracks().length
-        );
+        console.log("Añadi un elemento");
+        console.log(receivedStream);
+        globalArrayMedia.current.push(receivedStream);
       });
       concatArrayMediaStreamNow(globalArrayMedia, setGlobalArrayState);
-
-      // const updatedStream = globalStream
-      //   ? globalStream.clone()
-      //   : new MediaStream();
-
-      // receivedStreams.forEach((receivedStream) => {
-      //   console.log("MediaStream Recibido", receivedStream);
-      //   console.log(
-      //     "Numero de Tracks recibidos:",
-      //     receivedStream.getTracks().length
-      //   );
-
-      //   // Obtener las pistas individuales de audio y video
-      //   const audioTracks = receivedStream.getAudioTracks();
-      //   const videoTracks = receivedStream.getVideoTracks();
-
-      //   audioTracks.forEach((audioTrack) => {
-      //     //console.log('Tracks Recibidos Audio:', audioTrack)
-      //     updatedStream.addTrack(audioTrack);
-      //   });
-
-      //   videoTracks.forEach((videoTrack) => {
-      //     //console.log('Tracks Recibidos Audio:', videoTrack)
-      //     updatedStream.addTrack(videoTrack);
-      //   });
-      // });
-
       console.log("------------------------------------------------");
-
-      // setGlobalStream(updatedStream);
-    };
-
-    PeerConnection.current.onnegotiationneeded = (event) => {
-      console.log("ON NEgociation", event);
     };
   }
 
   function styleGrid(size: number, index: number): [string, string] {
-    console.log(size, index);
+    //console.log(size, index);
     switch (size) {
       case 1:
         return ["col-span-4", "h-[88vh]"];
@@ -295,6 +340,11 @@ export default function Page() {
         return ["col-span-1", "h-[22vh]"];
     }
   }
+
+  const handleInputChange = (event: any) => {
+    const newValue = event.target.value.toUpperCase();
+    setTicketCode(newValue);
+  };
 
   return (
     <>
@@ -385,14 +435,25 @@ export default function Page() {
                   >
                     <video
                       ref={(ref) => {
-                        if (ref) {
+                        if (ref && index == 0) {
+                          const clonedStream = new MediaStream();
+                          person.getTracks().forEach((track) => {
+                            clonedStream.addTrack(track.clone());
+                          });
+                          const audioTracks = clonedStream.getAudioTracks();
+
+                          if (audioTracks.length > 0) {
+                            const trackToRemove = audioTracks[0];
+                            clonedStream.removeTrack(trackToRemove);
+                          }
+                          ref.srcObject = clonedStream;
+                        } else if (ref) {
                           ref.srcObject = person;
                         }
                       }}
                       className={`rounded-2xl w-full ${height}`}
                       autoPlay
                       playsInline
-                      muted
                     />
                   </div>
                 );
@@ -402,7 +463,7 @@ export default function Page() {
             {/* Controls */}
             <div className="flex justify-center gap-4 p-2">
               <div
-                onClick={() => setOnAudio((onAudio) => !onAudio)}
+                onClick={() => setAudioRTC()}
                 className="flex p-2 h-12 w-12 justify-center items-center bg-gray-950 rounded-full hover:bg-purple-950"
               >
                 {onAudio ? (
@@ -413,7 +474,7 @@ export default function Page() {
               </div>
 
               <div
-                onClick={() => setOnVideo((onVideo) => !onVideo)}
+                onClick={() => setVideoRTC()}
                 className="flex p-2 h-12 w-12 justify-center items-center bg-gray-950 rounded-full hover:bg-purple-950"
               >
                 {onVideo ? (
@@ -432,6 +493,24 @@ export default function Page() {
                 className="flex p-2 h-12 w-12 justify-center items-center bg-gray-950 rounded-full hover:bg-purple-950"
               >
                 <FontAwesomeIcon icon={faMessage} />
+              </div>
+
+              <div
+                onClick={() => {
+                  console.log(PeerConnection.current.getTransceivers());
+                }}
+                className="flex p-2 h-12 w-12 justify-center items-center bg-gray-950 rounded-full hover:bg-purple-950"
+              >
+                GET
+              </div>
+              <div
+                onClick={() => {
+                  console.log("List Array Ref:", globalArrayMedia.current);
+                  console.log("List Array State:", globalArrayState);
+                }}
+                className="flex p-2 h-12 w-12 justify-center items-center bg-gray-950 rounded-full hover:bg-purple-950"
+              >
+                STATE
               </div>
             </div>
           </div>

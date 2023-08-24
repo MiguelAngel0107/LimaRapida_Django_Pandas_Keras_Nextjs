@@ -4,6 +4,8 @@ import NavBar from "@/components/navigation/navBar";
 import Footer from "@/components/navigation/footer";
 import Alert from "@/components/alert/alert";
 import { Providers } from "@/redux/provider";
+import Script from "next/script";
+import { GoogleAnalytics, GoogleTagManager } from "@/components/google/scripts";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -19,6 +21,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <GoogleAnalytics/>
+      <GoogleTagManager/>
+      
       <body className={`${inter.className} bg-gray-950`}>
         <Providers>
           <NavBar />
