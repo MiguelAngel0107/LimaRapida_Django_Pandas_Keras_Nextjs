@@ -4,11 +4,10 @@ import json
 
 class VideoCallConsumerChat(AsyncWebsocketConsumer):
     async def connect(self):
-        # Obtén el nombre de la sala desde los parámetros de la URL (por ejemplo, ws://localhost:8000/ws/call/sala1/)
         self.room_name = self.scope['url_route']['kwargs']['room_name']
-        self.room_group_name = 'video_call_%s' % self.room_name
-
-        # Unirse al grupo de la sala
+        self.room_group_name = 'chat_%s' % self.room_name
+        
+        # Join room group
         await self.channel_layer.group_add(
             self.room_group_name,
             self.channel_name
@@ -17,105 +16,40 @@ class VideoCallConsumerChat(AsyncWebsocketConsumer):
         await self.accept()
 
     async def disconnect(self, close_code):
-        # Salir del grupo de la sala
+        # Leave room group
         await self.channel_layer.group_discard(
             self.room_group_name,
             self.channel_name
         )
 
+    # Receive message from WebSocket
     async def receive(self, text_data):
-        # Obtener el mensaje JSON enviado desde el cliente
         data = json.loads(text_data)
-        signal_type = data.get('type')
-        signal_payload = data.get('payload')
+        message = data['message']
+        username = data['username']
+        room = data['room']
 
-        sdp = data.get('sdp')
-        candidate = data.get('candidate')
+        # Send message to room group
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            {
+                'type': 'chat_message',
+                'message': message,
+                'username': username
+            }
+        )
 
-        # print(data)
+    # Receive message from room group
+    async def chat_message(self, event):
+        message = event['message']
+        username = event['username']
 
-        if signal_type == 'signal':
-            # Reenviar la señal recibida a todos los miembros del grupo de la sala (excepto al remitente)
-            await self.channel_layer.group_send(
-                self.room_group_name,
-                {
-                    'type': 'forward_signal',
-                    'payload': signal_payload,
-                    'sender_channel_name': self.channel_name
-                }
-            )
-        elif signal_type == 'offer':
-            # Enviar la oferta recibida a todos los miembros del grupo de la sala (excepto al remitente)
-            await self.channel_layer.group_send(
-                self.room_group_name,
-                {
-                    'type': 'forward_offer',
-                    'sdp': sdp,
-                    'sender_channel_name': self.channel_name
-                }
-            )
-        elif signal_type == 'answer':
-            await self.channel_layer.group_send(
-                self.room_group_name,
-                {
-                    'type': 'forward_answer',
-                    'sdp': sdp,
-                    'sender_channel_name': self.channel_name
-                }
-            )
-        elif signal_type == 'candidate':
-            # Enviar el candidato recibido a todos los miembros del grupo de la sala (excepto al remitente)
-            await self.channel_layer.group_send(
-                self.room_group_name,
-                {
-                    'type': 'forward_candidate',
-                    'candidate': candidate,
-                    'sender_channel_name': self.channel_name
-                }
-            )
-
-    async def forward_signal(self, event):
-        # Enviar la señal recibida a todos los miembros del grupo de la sala (excepto al remitente original)
-        signal_payload = event['payload']
-        sender_channel_name = event['sender_channel_name']
-
+        # Send message to WebSocket
         await self.send(text_data=json.dumps({
-            'type': 'signal',
-            'payload': signal_payload
+            'message': message,
+            'username': username
         }))
 
-    async def forward_offer(self, event):
-        # Enviar la oferta recibida a todos los miembros del grupo de la sala (excepto al remitente original)
-        sdp = event['sdp']
-        sender_channel_name = event['sender_channel_name']
-
-        if self.channel_name != sender_channel_name:
-            await self.send(text_data=json.dumps({
-                'type': 'offer',
-                'sdp': sdp
-            }))
-
-    async def forward_answer(self, event):
-        # Enviar la respuesta recibida a todos los miembros del grupo de la sala (excepto al remitente original)
-        sdp = event['sdp']
-        sender_channel_name = event['sender_channel_name']
-
-        if self.channel_name != sender_channel_name:
-            await self.send(text_data=json.dumps({
-                'type': 'answer',
-                'sdp': sdp
-            }))
-
-    async def forward_candidate(self, event):
-        # Enviar el candidato recibido a todos los miembros del grupo de la sala (excepto al remitente original)
-        candidate = event['candidate']
-        sender_channel_name = event['sender_channel_name']
-
-        if self.channel_name != sender_channel_name:
-            await self.send(text_data=json.dumps({
-                'type': 'candidate',
-                'candidate': candidate
-            }))
 
 
 class VideoCallConsumer(AsyncWebsocketConsumer):
