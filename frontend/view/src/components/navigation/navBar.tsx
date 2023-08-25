@@ -39,28 +39,28 @@ const NavBar = () => {
 
   const moodTheme = (
     <Switch.Group>
-      <div className="flex items-center text-white">
+      <div className="flex items-center text-transparent">
         <Switch.Label className="mr-4 text-lg font-semibold">
-          <FontAwesomeIcon icon={faMoon} className="w-6 h-6 text-white" />
+          <FontAwesomeIcon icon={faMoon} className="w-6 h-6 text-transparent" />
         </Switch.Label>
         <Switch
           checked={theme}
           onChange={setTheme}
           className={`${
-            theme ? "bg-purple-200" : "bg-purple-900"
+            theme ? "bg-transparent" : "bg-transparent"
           } relative inline-flex items-center h-6 rounded-full w-11`}
         >
           <span className="sr-only">Switch</span>
           <span
             className={`${
               theme
-                ? "translate-x-6 bg-purple-900"
-                : "translate-x-1 bg-purple-200"
+                ? "translate-x-6 bg-transparent"
+                : "translate-x-1 bg-transparent"
             } inline-block w-4 h-4 transform rounded-full`}
           />
         </Switch>
         <Switch.Label className="ml-4 text-lg font-semibold">
-          <FontAwesomeIcon icon={faSun} className="w-6 h-6 text-white" />
+          <FontAwesomeIcon icon={faSun} className="w-6 h-6 text-transparent" />
         </Switch.Label>
       </div>
     </Switch.Group>
@@ -190,10 +190,10 @@ const NavBar = () => {
         )}
       </div>
       <div className="flex justify-center lg:justify-between items-center container mx-auto px-4 py-6">
-        <div className=" hidden lg:block">{moodAuth}</div>
+        <div className="hidden lg:block">{moodAuth}</div>
         {navDesktop}
         {navMobile}
-        <div className=" hidden lg:block">{moodTheme}</div>
+        <div className="hidden lg:block">{moodTheme}</div>
       </div>
       <Transition show={isMenuOpen}>
         <Dialog

@@ -19,8 +19,20 @@ export default function Page() {
   const fullNameUser = useAppSelector((state) => state.Auth.user?.name);
 
   const [hover, setHover] = useState([true, false, false, false]);
+  const [view, setView] = useState<number>(0);
 
-  const ChangeElements = (e:boolean[]) => {
+  useEffect(() => {
+    const handleResize = () => {
+      setView(window.innerWidth);
+    };
+    window.addEventListener("resize", handleResize);
+    setView(window.innerWidth);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
+  const ChangeElements = (e: boolean[]) => {
     if (e[0]) {
       return <RequestsFriends />;
     }
@@ -98,7 +110,7 @@ export default function Page() {
         )}
       </div>
 
-      {false ? (
+      {view >= 500 ? (
         <SubMenu1 setHover={setHover} hover={hover} />
       ) : (
         <SubMenu2 setHover={setHover} hover={hover} />

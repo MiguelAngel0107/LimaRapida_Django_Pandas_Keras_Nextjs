@@ -6,7 +6,6 @@ import { useEffect } from "react";
 
 const HomePage = () => {
   useEffect(() => {
-    get_ip()
     // Captura el evento de desplazamiento y actualiza la posición del fondo
     const parallaxContainer: HTMLElement | null =
       document.getElementById("parallax-container");
@@ -30,14 +29,6 @@ const HomePage = () => {
     { id: 3, name: "New users annually", value: "46,000" },
   ];
 
-  const get_ip = () => {
-    fetch("http://ip-api.com/json/?fields=61439")
-      .then((res) => res.json())
-      .then((res) => {
-        console.log(res)
-      });
-  };
-
   return (
     <div className="bg-gray-950">
       <div className="bg-transparent h-2" />
@@ -50,16 +41,16 @@ const HomePage = () => {
           <div className="flex flex-col md:flex-row items-center">
             <div className="md:w-1/2 mb-10">
               <h1 className="text-4xl md:text-6xl font-bold mb-6 text-gray-100">
-                Recolección de Datos para Fines Educativos
+                Plataforma de Multiconferencias y Aprendizaje Interactivo
               </h1>
-              <p className="text-lg text-gray-400 mb-8">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam
-                convallis sodales lectus. Donec a nunc ac lacus lobortis
-                gravida. Vestibulum ante ipsum primis in faucibus orci luctus et
-                ultrices posuere cubilia curae; Duis vel venenatis mi.
+              <p className="text-lg text-gray-200 mb-8">
+                Crea o Únete a nuestras conferencias y clases sincronas para
+                interactuar con expertos y compañeros. Además, nuestra
+                plataforma te permite tener chats privados con otros
+                participantes, fomentando la colaboración y el aprendizaje.
               </p>
               <a
-                href="#"
+                href="/meet"
                 className="bg-purple-700 hover:bg-purple-800 text-white py-2 px-6 rounded-full font-bold text-lg"
               >
                 Empezar
@@ -77,13 +68,13 @@ const HomePage = () => {
       <section className="text-gray-100 py-12">
         <div className="container mx-auto px-4">
           <div className="flex flex-col text-center w-full mb-20">
-            <h1 className="sm:text-3xl text-2xl font-bold mb-4 text-white">
-              Our Team
-            </h1>
+            <h2 className="sm:text-3xl text-2xl font-bold mb-4 text-white">
+              Nuestros Servicios
+            </h2>
             <p className="lg:w-2/3 mx-auto leading-relaxed text-base">
-              Whatever cardigan tote bag tumblr hexagon brooklyn asymmetrical
-              gentrify, subway tile poke farm-to-table. Franzen you probably
-              havent heard of them.
+              Descubre los servicios que ofrecemos para brindarte la mejor
+              experiencia educativa y de colaboración en nuestras conferencias
+              sincronizadas.
             </p>
           </div>
           <div className="container mx-auto mt-8 grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
@@ -95,24 +86,13 @@ const HomePage = () => {
               />
               <div className="px-6 py-4">
                 <div className="font-bold text-xl mb-2 text-black">
-                  Título del Servicio
+                  Videoconferencias Ilimitadas
                 </div>
                 <p className="text-gray-700 text-base">
-                  Descripción del servicio que sea más detallada e informativa.
-                  Puedes agregar más texto aquí para tener una vista previa del
-                  contenido.
+                  Disfruta de videoconferencias sin restricciones de tiempo o
+                  capacidad de participantes. Conéctate con expertos y
+                  compañeros en tiempo real.
                 </p>
-              </div>
-              <div className="px-6 py-4 bg-gray-100">
-                <span className="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2">
-                  #Etiqueta1
-                </span>
-                <span className="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2">
-                  #Etiqueta2
-                </span>
-                <span className="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700">
-                  #Etiqueta3
-                </span>
               </div>
             </div>
 
@@ -124,24 +104,13 @@ const HomePage = () => {
               />
               <div className="px-6 py-4">
                 <div className="font-bold text-xl mb-2 text-black">
-                  Título del Servicio
+                  Mensajería Privada y Protegida
                 </div>
                 <p className="text-gray-700 text-base">
-                  Descripción del servicio que sea más detallada e informativa.
-                  Puedes agregar más texto aquí para tener una vista previa del
-                  contenido.
+                  Mantén conversaciones seguras y encriptadas con otros
+                  participantes. Colabora y comparte ideas de manera
+                  confidencial.
                 </p>
-              </div>
-              <div className="px-6 py-4 bg-gray-100">
-                <span className="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2">
-                  #Etiqueta1
-                </span>
-                <span className="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2">
-                  #Etiqueta2
-                </span>
-                <span className="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700">
-                  #Etiqueta3
-                </span>
               </div>
             </div>
             <div className="rounded-lg overflow-hidden shadow-lg bg-white">
@@ -152,31 +121,20 @@ const HomePage = () => {
               />
               <div className="px-6 py-4">
                 <div className="font-bold text-xl mb-2 text-black">
-                  Título del Servicio
+                  Sistema de Blog y Publicaciones
                 </div>
                 <p className="text-gray-700 text-base">
-                  Descripción del servicio que sea más detallada e informativa.
-                  Puedes agregar más texto aquí para tener una vista previa del
-                  contenido.
+                  Mantente al tanto de las próximas conferencias y eventos
+                  educativos a través de nuestro sistema de blogs. Comparte tus
+                  conocimientos y aprendizajes con la comunidad.
                 </p>
-              </div>
-              <div className="px-6 py-4 bg-gray-100">
-                <span className="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2">
-                  #Etiqueta1
-                </span>
-                <span className="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2">
-                  #Etiqueta2
-                </span>
-                <span className="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700">
-                  #Etiqueta3
-                </span>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      <div className="bg-gray-950 py-24 sm:py-32">
+      {/*<div className="bg-gray-950 py-24 sm:py-32">
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <dl className="grid grid-cols-1 gap-x-8 gap-y-16 text-center lg:grid-cols-3">
             {stats.map((stat) => (
@@ -192,9 +150,9 @@ const HomePage = () => {
             ))}
           </dl>
         </div>
-      </div>
+            </div>*/}
 
-      <div className="bg-gray-950 py-24 sm:py-32">
+      {/*<div className="bg-gray-950 py-24 sm:py-32">
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <h2 className="text-center text-lg font-semibold leading-8 text-white">
             Trusted by the world’s most innovative teams
@@ -237,18 +195,20 @@ const HomePage = () => {
             />
           </div>
         </div>
-      </div>
+            </div>*/}
 
       <section className="text-gray-400 bg-gray-950 body-font">
         <div className="container px-5 py-32 mx-auto">
           <div className="flex flex-col text-center w-full mb-20">
             <h1 className="sm:text-3xl text-2xl font-bold mb-4 text-white">
-              Our Team
+              Nuestro Equipo de Desarrollo
             </h1>
             <p className="lg:w-2/3 mx-auto leading-relaxed text-base">
-              Whatever cardigan tote bag tumblr hexagon brooklyn asymmetrical
-              gentrify, subway tile poke farm-to-table. Franzen you probably
-              havent heard of them.
+              Somos un equipo apasionado y comprometido de desarrolladores,
+              diseñadores y amantes de la educación. Nuestra misión es crear una
+              plataforma que promueva la interactividad, el aprendizaje
+              colaborativo y el acceso a conferencias inspiradoras en todo el
+              mundo.
             </p>
           </div>
           <div className="flex flex-wrap -m-2">
@@ -259,132 +219,12 @@ const HomePage = () => {
                   className="w-16 h-16 bg-gray-100 object-cover object-center flex-shrink-0 rounded-full mr-4"
                   src="https://dummyimage.com/80x80"
                 />
-                <div className="flex-grow">
+                <a className="flex-grow" href="https://www.instagram.com/miguelsuyo/" target="_blank">
                   <h2 className="text-white title-font font-medium">
-                    Holden Caulfield
+                    Miguel Egocheaga
                   </h2>
-                  <p className="text-gray-600">UI Designer</p>
-                </div>
-              </div>
-            </div>
-            <div className="p-2 lg:w-1/3 md:w-1/2 w-full">
-              <div className="h-full flex items-center border-gray-800 border p-4 rounded-lg">
-                <img
-                  alt="team"
-                  className="w-16 h-16 bg-gray-100 object-cover object-center flex-shrink-0 rounded-full mr-4"
-                  src="https://dummyimage.com/84x84"
-                />
-                <div className="flex-grow">
-                  <h2 className="text-white title-font font-medium">
-                    Henry Letham
-                  </h2>
-                  <p className="text-gray-600">CTO</p>
-                </div>
-              </div>
-            </div>
-            <div className="p-2 lg:w-1/3 md:w-1/2 w-full">
-              <div className="h-full flex items-center border-gray-800 border p-4 rounded-lg">
-                <img
-                  alt="team"
-                  className="w-16 h-16 bg-gray-100 object-cover object-center flex-shrink-0 rounded-full mr-4"
-                  src="https://dummyimage.com/88x88"
-                />
-                <div className="flex-grow">
-                  <h2 className="text-white title-font font-medium">
-                    Oskar Blinde
-                  </h2>
-                  <p className="text-gray-600">Founder</p>
-                </div>
-              </div>
-            </div>
-            <div className="p-2 lg:w-1/3 md:w-1/2 w-full">
-              <div className="h-full flex items-center border-gray-800 border p-4 rounded-lg">
-                <img
-                  alt="team"
-                  className="w-16 h-16 bg-gray-100 object-cover object-center flex-shrink-0 rounded-full mr-4"
-                  src="https://dummyimage.com/90x90"
-                />
-                <div className="flex-grow">
-                  <h2 className="text-white title-font font-medium">
-                    John Doe
-                  </h2>
-                  <p className="text-gray-600">DevOps</p>
-                </div>
-              </div>
-            </div>
-            <div className="p-2 lg:w-1/3 md:w-1/2 w-full">
-              <div className="h-full flex items-center border-gray-800 border p-4 rounded-lg">
-                <img
-                  alt="team"
-                  className="w-16 h-16 bg-gray-100 object-cover object-center flex-shrink-0 rounded-full mr-4"
-                  src="https://dummyimage.com/94x94"
-                />
-                <div className="flex-grow">
-                  <h2 className="text-white title-font font-medium">
-                    Martin Eden
-                  </h2>
-                  <p className="text-gray-600">Software Engineer</p>
-                </div>
-              </div>
-            </div>
-            <div className="p-2 lg:w-1/3 md:w-1/2 w-full">
-              <div className="h-full flex items-center border-gray-800 border p-4 rounded-lg">
-                <img
-                  alt="team"
-                  className="w-16 h-16 bg-gray-100 object-cover object-center flex-shrink-0 rounded-full mr-4"
-                  src="https://dummyimage.com/98x98"
-                />
-                <div className="flex-grow">
-                  <h2 className="text-white title-font font-medium">
-                    Boris Kitua
-                  </h2>
-                  <p className="text-gray-600">UX Researcher</p>
-                </div>
-              </div>
-            </div>
-            <div className="p-2 lg:w-1/3 md:w-1/2 w-full">
-              <div className="h-full flex items-center border-gray-800 border p-4 rounded-lg">
-                <img
-                  alt="team"
-                  className="w-16 h-16 bg-gray-100 object-cover object-center flex-shrink-0 rounded-full mr-4"
-                  src="https://dummyimage.com/100x90"
-                />
-                <div className="flex-grow">
-                  <h2 className="text-white title-font font-medium">
-                    Atticus Finch
-                  </h2>
-                  <p className="text-gray-600">QA Engineer</p>
-                </div>
-              </div>
-            </div>
-            <div className="p-2 lg:w-1/3 md:w-1/2 w-full">
-              <div className="h-full flex items-center border-gray-800 border p-4 rounded-lg">
-                <img
-                  alt="team"
-                  className="w-16 h-16 bg-gray-100 object-cover object-center flex-shrink-0 rounded-full mr-4"
-                  src="https://dummyimage.com/104x94"
-                />
-                <div className="flex-grow">
-                  <h2 className="text-white title-font font-medium">
-                    Alper Kamu
-                  </h2>
-                  <p className="text-gray-600">System</p>
-                </div>
-              </div>
-            </div>
-            <div className="p-2 lg:w-1/3 md:w-1/2 w-full">
-              <div className="h-full flex items-center border-gray-800 border p-4 rounded-lg">
-                <img
-                  alt="team"
-                  className="w-16 h-16 bg-gray-100 object-cover object-center flex-shrink-0 rounded-full mr-4"
-                  src="https://dummyimage.com/108x98"
-                />
-                <div className="flex-grow">
-                  <h2 className="text-white title-font font-medium">
-                    Rodrigo Monchi
-                  </h2>
-                  <p className="text-gray-600">Product Manager</p>
-                </div>
+                  <p className="text-gray-600">Software Developer </p>
+                </a>
               </div>
             </div>
           </div>

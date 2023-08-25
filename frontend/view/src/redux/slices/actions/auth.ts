@@ -76,7 +76,8 @@ export const signup =
     email: string,
     password: string,
     re_password: string,
-    wallet_address: string
+    wallet_address: string,
+    setStateLoading: React.Dispatch<React.SetStateAction<boolean>>
   ) =>
   async (dispatch: AppDispatch) => {
     const config = {
@@ -104,18 +105,26 @@ export const signup =
         dispatch(
           setAlert("Te enviamos un correo, porfavor activa tu cuenta", "green")
         );
+        setStateLoading(false)
       } else {
         dispatch(SIGNUP_FAIL());
         dispatch(setAlert("Error al crear cuenta", "red"));
+        setStateLoading(false)
       }
     } catch (err) {
       dispatch(SIGNUP_FAIL());
       dispatch(setAlert("Error con el servidor, intenta mas tarde", "red"));
+      setStateLoading(false)
     }
   };
 
 export const login =
-  (email: string, password: string, wallet_address: string) =>
+  (
+    email: string,
+    password: string,
+    wallet_address: string,
+    setStateLoading: React.Dispatch<React.SetStateAction<boolean>>
+  ) =>
   async (dispatch: AppDispatch) => {
     const config = {
       headers: {
@@ -140,15 +149,18 @@ export const login =
         dispatch(LOGIN_SUCCESS(res.data));
         dispatch(setAlert("Inicio de sesión con éxito", "green"));
         console.log(res.data);
+        setStateLoading(false)
       } else {
         dispatch(LOGIN_FAIL());
         console.log(res.data);
         dispatch(setAlert("Error al iniciar sesion", "red"));
+        setStateLoading(false)
       }
     } catch (err) {
       dispatch(LOGIN_FAIL());
       console.log(err);
       dispatch(setAlert("Error al iniciar sesion. Intenta mas tarde", "red"));
+      setStateLoading(false)
     }
   };
 
