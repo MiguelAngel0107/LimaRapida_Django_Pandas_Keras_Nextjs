@@ -10,9 +10,11 @@ import {
   faPhoneSlash,
   faMessage,
   faCircleInfo,
+  faXmark
 } from "@fortawesome/free-solid-svg-icons";
 import { APP_URL_WS_BACK } from "@/globals";
 import Link from "next/link";
+import ChatMeet from "@/components/meet/chatMeet";
 
 interface Conexion {
   id: string;
@@ -27,7 +29,7 @@ export default function Page() {
   const [openChat, setOpenChat] = useState(false);
   const [onAudio, setOnAudio] = useState(true);
   const [onVideo, setOnVideo] = useState(true);
-  const [onInfo, setOnInfo] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const socket = useRef<WebSocket>();
   const PeerConnectionRefs = useRef<Conexion[]>([]);
@@ -57,6 +59,7 @@ export default function Page() {
 
     return () => {
       socket.current?.close();
+      PeerConnectionRefs.current.forEach((connection) => connection.RTCconexion.close());
     };
   }, []);
 
@@ -433,15 +436,34 @@ export default function Page() {
       case 4:
         return ["col-span-2", "h-[44vh]"];
       default:
-        return ["", ""];
+        return ["col-span-1", "h-[22vh]"];
     }
   }
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard
+      .writeText(text)
+      .then(() => {
+        setCopied(true);
+        setTimeout(() => {
+          setCopied(false);
+        }, 2000); // Cambia este valor para ajustar el tiempo que se muestra el mensaje de "Copiado"
+      })
+      .catch((error) => {
+        console.error("Error al copiar al portapapeles:", error);
+      });
+  };
+
+  const handleClick = () => {
+    const link = `https://www.owndark.com/meet?code=${idUserWebSocket.current[1]}`;
+    copyToClipboard(link);
+  };
 
   return (
     <div className="grid grid-cols-10 gap-4 m-10">
       <div
         className={`${
-          openChat ? "col-span-8" : "col-span-10"
+          openChat ? "col-span-10" : "col-span-10"
         } bg-gradient-to-y from-purple-950/60 to-gray-950 rounded-3xl`}
       >
         <div className="flex-col h-screen">
@@ -523,7 +545,7 @@ export default function Page() {
               <FontAwesomeIcon icon={faMessage} />
             </div>
 
-            <div
+            {/*<div
               onClick={() => {
                 PeerConnectionRefs.current.forEach((conexion) => {
                   console.log(conexion.RTCconexion.getTransceivers());
@@ -541,7 +563,8 @@ export default function Page() {
               className="flex p-2 h-12 w-12 justify-center items-center bg-gray-950 rounded-full hover:bg-purple-950"
             >
               STATE
-            </div>
+            </div>*/}
+
             <Popover>
               <Popover.Button>
                 <div className="flex p-2 h-12 w-12 justify-center items-center bg-gray-950 rounded-full hover:bg-purple-950">
@@ -550,23 +573,45 @@ export default function Page() {
               </Popover.Button>
               <Popover.Panel className="flex flex-col justify-center text-center absolute -bottom-24 bg-white p-4 rounded-3xl text-black border-2 border-purple-600 ">
                 Este es el link de la Reunion:
-                <Link
-                  href="/reunion"
-                  className="text-purple-600 hover:underline"
+                <p
+                  className="text-purple-600 hover:underline cursor-pointer"
+                  onClick={handleClick}
                 >
-                  https://www.owndark.com/meet?code={idUserWebSocket.current[1]}
-                </Link>
+                  {copied ? (
+                    "¡Copiado!"
+                  ) : (
+                    <>
+                      https://www.owndark.com/meet?code=
+                      {idUserWebSocket.current[1]}
+                    </>
+                  )}
+                </p>
               </Popover.Panel>
             </Popover>
           </div>
         </div>
       </div>
-      <div
-        className={`${
-          openChat ? "col-span-2" : "hidden"
-        } bg-gradient-to-b from-purple-950/60 to-gray-950 rounded-3xl`}
-      >
-        Chat
+      <div>
+        {idUserWebSocket.current[1] ? (
+          <div
+            className={`fixed top-0 right-0 h-full w-3/4 sm:w-1/2 md:w-1/4 bg-gray-950 ${
+              openChat ? "translate-x-0" : "translate-x-full"
+            } transition-transform ease-in-out duration-300`}
+          >
+            <div
+              className="absolute top-2 left-2 text-white z-50 bg-purple-900 hover:bg-purple-800 p-1 rounded-full cursor-pointer"
+              onClick={() => setOpenChat((state) => !state)}
+            >
+              <FontAwesomeIcon icon={faXmark} className="text-white w-6 h-6 mt-1 px-1" />
+            </div>
+
+            <div className="bg-gradient-to-b from-purple-950 to-gray-950 rounded-l-lg">
+              <ChatMeet unique_code={idUserWebSocket.current[1]} />
+            </div>
+          </div>
+        ) : (
+          <></>
+        )}
       </div>
     </div>
   );

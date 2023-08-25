@@ -9,12 +9,16 @@ import {
   faVideoSlash,
   faPhoneSlash,
   faMessage,
+  faXmark
 } from "@fortawesome/free-solid-svg-icons";
 import { APP_URL_WS_BACK } from "@/globals";
+import ChatMeet from "@/components/meet/chatMeet";
 
 export default function Page() {
   const [openChat, setOpenChat] = useState(false);
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(
+    localStorage.getItem("code_meet") ? false : true
+  );
   const [onAudio, setOnAudio] = useState(true);
   const [onVideo, setOnVideo] = useState(true);
 
@@ -47,17 +51,21 @@ export default function Page() {
     const code = localStorage.getItem("code_meet");
 
     if (code) {
-      setIsOpen(false);
-      socket.current = new WebSocket(
-        `${APP_URL_WS_BACK}/ws/video-test/${code}/`
-      );
+      setTicketCode(code);
+      if (socket.current == undefined) {
+        socket.current = new WebSocket(
+          `${APP_URL_WS_BACK}/ws/video-test/${code}/`
+        );
+      }
       setTimeout(() => handleStartCall(), 2000);
+      console.log("Me ejecute osea prendi el websocket");
+      localStorage.removeItem("code_meet");
     }
 
     return () => {
-      //   if (code) {
-      //     localStorage.removeItem("code_meet");
-      //   }
+      // if (code) {
+      //   localStorage.removeItem("code_meet");
+      // }
       PeerConnection.current.close();
       socket.current?.close();
     };
@@ -74,7 +82,7 @@ export default function Page() {
       const idUser = data["idUser"];
       delete data["idUser"];
 
-      // console.log("Recibido del Servidor:", data);
+      //console.log("Recibido del Servidor:", data);
 
       if (
         type === "answer" &&
@@ -241,8 +249,12 @@ export default function Page() {
   };
 
   const handleStartCall = async () => {
-    if (localStream && PeerConnection.current) {
-      addTracksToLocalConnection(PeerConnection.current, localStream);
+    if (globalArrayMedia.current[0] && PeerConnection.current) {
+      console.log("Se estableció peerconectionRtc");
+      addTracksToLocalConnection(
+        PeerConnection.current,
+        globalArrayMedia.current[0]
+      );
       const offerSdp = await PeerConnection.current.createOffer();
       await controlDescriptionLocal(PeerConnection.current, offerSdp);
       socket.current?.send(
@@ -252,6 +264,7 @@ export default function Page() {
           msg: "Envio Recibido",
         })
       );
+      console.log("envie un mensaje al servidor de websocket");
     }
   };
 
@@ -414,7 +427,7 @@ export default function Page() {
         <div
           className={`${
             openChat ? "col-span-8" : "col-span-10"
-          } bg-gradient-to-t from-purple-950/60 to-gray-950 rounded-3xl`}
+          } bg-gradient-to-y from-purple-950/60 to-gray-950 rounded-3xl`}
         >
           <div className="flex-col h-screen">
             {/*        <div className="w-full bg-purple-900 rounded-t-3xl p-2">options</div>*/}
@@ -467,9 +480,12 @@ export default function Page() {
                 className="flex p-2 h-12 w-12 justify-center items-center bg-gray-950 rounded-full hover:bg-purple-950"
               >
                 {onAudio ? (
-                  <FontAwesomeIcon icon={faMicrophone} />
+                  <FontAwesomeIcon icon={faMicrophone} className="text-white" />
                 ) : (
-                  <FontAwesomeIcon icon={faMicrophoneSlash} />
+                  <FontAwesomeIcon
+                    icon={faMicrophoneSlash}
+                    className="text-white"
+                  />
                 )}
               </div>
 
@@ -478,24 +494,24 @@ export default function Page() {
                 className="flex p-2 h-12 w-12 justify-center items-center bg-gray-950 rounded-full hover:bg-purple-950"
               >
                 {onVideo ? (
-                  <FontAwesomeIcon icon={faVideo} />
+                  <FontAwesomeIcon icon={faVideo} className="text-white" />
                 ) : (
-                  <FontAwesomeIcon icon={faVideoSlash} />
+                  <FontAwesomeIcon icon={faVideoSlash} className="text-white" />
                 )}
               </div>
 
               <div className="flex p-2 h-12 w-12 justify-center items-center bg-red-900 rounded-full hover:bg-red-800">
-                <FontAwesomeIcon icon={faPhoneSlash} />
+                <FontAwesomeIcon icon={faPhoneSlash} className="text-white" />
               </div>
 
               <div
                 onClick={() => setOpenChat((chat) => !chat)}
                 className="flex p-2 h-12 w-12 justify-center items-center bg-gray-950 rounded-full hover:bg-purple-950"
               >
-                <FontAwesomeIcon icon={faMessage} />
+                <FontAwesomeIcon icon={faMessage} className="text-white" />
               </div>
 
-              <div
+              {/*<div
                 onClick={() => {
                   console.log(PeerConnection.current.getTransceivers());
                 }}
@@ -511,7 +527,7 @@ export default function Page() {
                 className="flex p-2 h-12 w-12 justify-center items-center bg-gray-950 rounded-full hover:bg-purple-950"
               >
                 STATE
-              </div>
+              </div>*/}
             </div>
           </div>
         </div>
@@ -520,7 +536,29 @@ export default function Page() {
             openChat ? "col-span-2" : "hidden"
           } bg-gradient-to-b from-purple-950/60 to-gray-950 rounded-3xl`}
         >
-          Chat
+          {ticketCode.length == 11 ? (
+            <div
+              className={`fixed top-0 right-0 h-full w-3/4 sm:w-1/2 md:w-1/4 bg-gray-950 ${
+                openChat ? "translate-x-0" : "translate-x-full"
+              } transition-transform ease-in-out duration-300`}
+            >
+              <div
+                className="absolute top-2 left-2 text-white z-50 bg-purple-900 hover:bg-purple-800 p-1 rounded-full cursor-pointer"
+                onClick={() => setOpenChat((state) => !state)}
+              >
+                <FontAwesomeIcon
+                  icon={faXmark}
+                  className="text-white w-6 h-6 mt-1 px-1"
+                />
+              </div>
+
+              <div className="bg-gradient-to-b from-purple-950 to-gray-950 rounded-l-lg">
+              <ChatMeet unique_code={ticketCode} />
+              </div>
+            </div>
+          ) : (
+            <></>
+          )}
         </div>
       </div>
     </>

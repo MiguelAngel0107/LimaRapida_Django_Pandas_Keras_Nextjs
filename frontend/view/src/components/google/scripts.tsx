@@ -34,7 +34,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-MHDNQN8W');`}
       </Script>
 
-     { /*<noscript id="google-tag-noscript">
+     { <noscript id="google-tag-noscript">
         <iframe
           src="https://www.googletagmanager.com/ns.html?id=GTM-MHDNQN8W"
           height="0"
@@ -43,7 +43,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             { display: "none", visibility: "hidden" } as React.CSSProperties
           }
         ></iframe>
-        </noscript>*/}
+        </noscript>}
     </>
   );
 }
