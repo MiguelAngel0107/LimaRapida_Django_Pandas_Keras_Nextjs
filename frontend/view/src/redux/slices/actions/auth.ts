@@ -104,13 +104,13 @@ export const signup =
       if (res.status === 201) {
         dispatch(SIGNUP_SUCCESS(res.data));
         dispatch(
-          setAlert("Te enviamos un correo, porfavor activa tu cuenta", "green")
+          setAlert("La cuenta a sido creada con éxito porfavor ingrese a Inicio de Sesión.", "green")
         );
         setStateLoading(false);
         setSuccessServer(true);
       } else {
         dispatch(SIGNUP_FAIL());
-        dispatch(setAlert("Error al crear cuenta", "red"));
+        dispatch(setAlert("Error al crear cuenta, intentalo de nuevo", "red"));
         setStateLoading(false);
       }
     } catch (err) {
@@ -203,5 +203,5 @@ export const refresh = () => async (dispatch: AppDispatch) => {
 export const logout = () => (dispatch: AppDispatch) => {
   console.log("cerrado actions");
   dispatch(LOGOUT());
-  dispatch(setAlert("Succesfully logged out", "green"));
+  dispatch(setAlert("La cuenta se cerró con exito", "green"));
 };
