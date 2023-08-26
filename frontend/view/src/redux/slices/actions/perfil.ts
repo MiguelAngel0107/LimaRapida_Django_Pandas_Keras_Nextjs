@@ -10,6 +10,7 @@ import {
 import axios from "axios";
 import { APP_URL_HTTP_BACK } from "@/globals";
 import { AppDispatch } from "@/redux/store";
+import { setAlert } from "./alert";
 
 export const get_perfil_user = () => async (dispatch: AppDispatch) => {
   const config = {
@@ -54,32 +55,38 @@ export const get_perfil_public_user =
     }
   };
 
-export const send_request_friend = async (toUserId: number) => {
-  const config = {
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `JWT ${localStorage.getItem("access")}`,
-    },
-  };
-  const body = JSON.stringify({ to_user: toUserId });
-  try {
-    const res = await axios.post(
-      `${APP_URL_HTTP_BACK}/profile/send-friend-request/`,
-      body,
-      config
-    );
+export const send_request_friend =
+  (toUserId: number) => async (dispatch: AppDispatch) => {
+    const config = {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `JWT ${localStorage.getItem("access")}`,
+      },
+    };
+    const body = JSON.stringify({ to_user: toUserId });
+    try {
+      const res = await axios.post(
+        `${APP_URL_HTTP_BACK}/profile/send-friend-request/`,
+        body,
+        config
+      );
 
-    if (res.status === 201) {
-      // Actualizar el estado del componente o mostrar un mensaje de éxito
-      console.log("Solicitud de amistad enviada con éxito");
-    } else {
-      // Manejar errores de solicitud
-      console.error("Error al enviar la solicitud de amistad");
+      if (res.status === 201) {
+        // Actualizar el estado del componente o mostrar un mensaje de éxito
+        console.log("Solicitud de amistad enviada con éxito");
+        dispatch(setAlert("Solicitud de amistad enviada con éxito", "green"));
+      } else {
+        // Manejar errores de solicitud
+        console.error("Error al enviar la solicitud de amistad");
+        dispatch(setAlert("Error al enviar la solicitud de amistad", "red"));
+      }
+    } catch (error) {
+      console.error("Error en la solicitud:", error);
+      dispatch(
+        setAlert("Error con nuestros servidores, intentalo mas tarde", "red")
+      );
     }
-  } catch (error) {
-    console.error("Error en la solicitud:", error);
-  }
-};
+  };
 
 export const get_requests_friends = () => async (dispatch: AppDispatch) => {
   const config = {

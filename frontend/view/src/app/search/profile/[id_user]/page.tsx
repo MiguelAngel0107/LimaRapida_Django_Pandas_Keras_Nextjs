@@ -20,7 +20,7 @@ export default function Page() {
   const userSession = useAppSelector((state) => state.Auth.user?.id);
 
   const sendFriendRequest = async (toUserId: number) => {
-    send_request_friend(toUserId);
+    dispatch(send_request_friend(toUserId));
   };
 
   return (
