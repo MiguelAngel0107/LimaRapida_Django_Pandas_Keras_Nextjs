@@ -100,6 +100,7 @@ const RegisterForm: React.FC = () => {
               value={email}
               onChange={(e) => onChange(e)}
               name="email"
+              required
             />
           </div>
           <div className="mb-2">
@@ -116,6 +117,7 @@ const RegisterForm: React.FC = () => {
             />
             <button
               className="pl-2"
+              type="button"
               onClick={() => setShowPassword(!showPassword)}
             >
               {showPassword ? (
@@ -142,6 +144,7 @@ const RegisterForm: React.FC = () => {
             />
             <button
               className="pl-2"
+              type="button"
               onClick={() => setShowRePassword(!showRePassword)}
             >
               {showRePassword ? (
