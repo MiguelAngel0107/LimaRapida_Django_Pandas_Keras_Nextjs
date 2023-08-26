@@ -5,6 +5,9 @@ import { useState, ChangeEvent, FormEvent, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { useAppDispatch } from "@/redux/hooks";
 import { signup, check_authenticated } from "@/redux/slices/actions/auth";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
+import { useRouter } from "next/navigation";
 
 interface FormData {
   name: string;
@@ -16,13 +19,17 @@ interface FormData {
 
 const RegisterForm: React.FC = () => {
   const dispatch = useAppDispatch();
+  const router = useRouter();
 
   useEffect(() => {
     dispatch(check_authenticated());
   }, []);
 
   const [loading, setLoading] = useState(false);
-
+  const [successServer, setSuccessServer] = useState(false);
+  const [passwordsMatch, setPasswordsMatch] = useState(true);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showRePassword, setShowRePassword] = useState(false);
   const [formData, setFormData] = useState<FormData>({
     name: "",
     email: "",
@@ -31,6 +38,12 @@ const RegisterForm: React.FC = () => {
     wallet_address: "",
   });
 
+  useEffect(() => {
+    if (successServer) {
+      router.push("/auth/login");
+    }
+  }, [successServer]);
+
   const { name, email, password, re_password, wallet_address } = formData;
   const onChange = (e: ChangeEvent<HTMLInputElement>) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -38,7 +51,24 @@ const RegisterForm: React.FC = () => {
   const onSubmit = (e: FormEvent) => {
     setLoading(true);
     e.preventDefault();
-    dispatch(signup(name, email, password, re_password, wallet_address, setLoading));
+
+    if (password !== re_password) {
+      setPasswordsMatch(false);
+      setLoading(false);
+      return;
+    }
+
+    dispatch(
+      signup(
+        name,
+        email,
+        password,
+        re_password,
+        wallet_address,
+        setLoading,
+        setSuccessServer
+      )
+    );
   };
   return (
     <div className="flex flex-col justify-center items-center h-[1000px] bg-gray-950">
@@ -77,13 +107,23 @@ const RegisterForm: React.FC = () => {
               Password
             </label>
             <input
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
-              type="password"
+              className="shadow appearance-none border rounded w-11/12 py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
+              type={showPassword ? "text" : "password"}
               value={password}
               onChange={(e) => onChange(e)}
               name="password"
               required
             />
+            <button
+              className="pl-2"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? (
+                <FontAwesomeIcon icon={faEye} />
+              ) : (
+                <FontAwesomeIcon icon={faEyeSlash} />
+              )}
+            </button>
           </div>
           <div className="mb-2">
             <label
@@ -93,14 +133,30 @@ const RegisterForm: React.FC = () => {
               Confirm Password
             </label>
             <input
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
-              type="password"
+              className="shadow appearance-none border rounded w-11/12 py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
+              type={showRePassword ? "text" : "password"}
               value={re_password}
               onChange={(e) => onChange(e)}
               name="re_password"
               required
             />
+            <button
+              className="pl-2"
+              onClick={() => setShowRePassword(!showRePassword)}
+            >
+              {showRePassword ? (
+                <FontAwesomeIcon icon={faEye} />
+              ) : (
+                <FontAwesomeIcon icon={faEyeSlash} />
+              )}
+            </button>
           </div>
+
+          {!passwordsMatch && (
+            <p className="text-red-500 text-sm mb-2">
+              Las contraseñas no coinciden.
+            </p>
+          )}
 
           <button className="w-full py-2 mt-6 bg-violet-600 text-white font-semibold rounded-md hover:bg-violet-800 transition duration-300">
             {loading ? (
