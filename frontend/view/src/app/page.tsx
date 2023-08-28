@@ -83,6 +83,8 @@ const HomePage = () => {
                 className="w-full h-48 object-cover"
                 src={"/images/home/conferences.jpg"}
                 alt={"title"}
+                width={200}
+                height={200}
                 
               />
               <div className="px-6 py-4">
@@ -102,6 +104,8 @@ const HomePage = () => {
                 className="w-full h-48 object-cover"
                 src={"/images/home/messengerHub.jpg"}
                 alt={"title"}
+                width={200}
+                height={200}
               />
               <div className="px-6 py-4">
                 <div className="font-bold text-xl mb-2 text-black">
@@ -119,6 +123,8 @@ const HomePage = () => {
                 className="w-full h-48 object-cover"
                 src={"/images/home/blogAndPosts.jpg"}
                 alt={"title"}
+                width={200}
+                height={200}
               />
               <div className="px-6 py-4">
                 <div className="font-bold text-xl mb-2 text-black">
