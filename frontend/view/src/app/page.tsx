@@ -81,7 +81,7 @@ const HomePage = () => {
             <div className="rounded-lg overflow-hidden shadow-lg bg-white">
               <img
                 className="w-full h-48 object-cover"
-                src={"/images/home/backiee-196480.jpg"}
+                src={"/images/home/conferences.jpg"}
                 alt={"title"}
               />
               <div className="px-6 py-4">
@@ -99,7 +99,7 @@ const HomePage = () => {
             <div className="rounded-lg overflow-hidden shadow-lg bg-white">
               <img
                 className="w-full h-48 object-cover"
-                src={"/images/home/backiee-196480.jpg"}
+                src={"/images/home/messengerHub.jpg"}
                 alt={"title"}
               />
               <div className="px-6 py-4">
@@ -116,7 +116,7 @@ const HomePage = () => {
             <div className="rounded-lg overflow-hidden shadow-lg bg-white">
               <img
                 className="w-full h-48 object-cover"
-                src={"/images/home/backiee-196480.jpg"}
+                src={"/images/home/blogAndPosts.jpg"}
                 alt={"title"}
               />
               <div className="px-6 py-4">
