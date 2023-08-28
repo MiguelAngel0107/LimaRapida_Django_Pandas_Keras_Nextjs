@@ -79,10 +79,11 @@ const HomePage = () => {
           </div>
           <div className="container mx-auto mt-8 grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             <div className="rounded-lg overflow-hidden shadow-lg bg-white">
-              <img
+              <Image
                 className="w-full h-48 object-cover"
                 src={"/images/home/conferences.jpg"}
                 alt={"title"}
+                
               />
               <div className="px-6 py-4">
                 <div className="font-bold text-xl mb-2 text-black">
@@ -97,7 +98,7 @@ const HomePage = () => {
             </div>
 
             <div className="rounded-lg overflow-hidden shadow-lg bg-white">
-              <img
+              <Image
                 className="w-full h-48 object-cover"
                 src={"/images/home/messengerHub.jpg"}
                 alt={"title"}
@@ -114,7 +115,7 @@ const HomePage = () => {
               </div>
             </div>
             <div className="rounded-lg overflow-hidden shadow-lg bg-white">
-              <img
+              <Image
                 className="w-full h-48 object-cover"
                 src={"/images/home/blogAndPosts.jpg"}
                 alt={"title"}
